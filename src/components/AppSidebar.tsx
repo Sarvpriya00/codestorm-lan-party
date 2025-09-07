@@ -27,8 +27,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-// Mock user role - will come from auth context later
-const userRole = "participant";
+// Mock user role - will come from auth context later  
+const userRole = "admin"; // Change this to test different roles: "participant", "judge", "admin"
 
 const participantItems = [
   { title: "Dashboard", url: "/", icon: Home },

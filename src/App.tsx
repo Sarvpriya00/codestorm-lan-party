@@ -8,6 +8,11 @@ import { Dashboard } from "@/pages/Dashboard";
 import { Problems } from "@/pages/Problems";
 import { Leaderboard } from "@/pages/Leaderboard";
 import { Login } from "@/pages/Login";
+import { JudgeQueue } from "@/pages/JudgeQueue";
+import { MySubmissions } from "@/pages/MySubmissions";
+import { AdminUsers } from "@/pages/AdminUsers";
+import { AdminAnalytics } from "@/pages/AdminAnalytics";
+import { AdminControl } from "@/pages/AdminControl";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +38,31 @@ const App = () => (
           <Route path="/leaderboard" element={
             <Layout>
               <Leaderboard />
+            </Layout>
+          } />
+          <Route path="/judge" element={
+            <Layout>
+              <JudgeQueue />
+            </Layout>
+          } />
+          <Route path="/submissions" element={
+            <Layout>
+              <MySubmissions />
+            </Layout>
+          } />
+          <Route path="/admin/users" element={
+            <Layout>
+              <AdminUsers />
+            </Layout>
+          } />
+          <Route path="/admin/analytics" element={
+            <Layout>
+              <AdminAnalytics />
+            </Layout>
+          } />
+          <Route path="/admin/control" element={
+            <Layout>
+              <AdminControl />
             </Layout>
           } />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
