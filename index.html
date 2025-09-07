@@ -1,24 +1,49 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>codestorm-lan-party</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+    <title>CodeStorm 2024 - Offline Coding Contest</title>
+    <meta name="description" content="CodeStorm - Professional offline coding contest platform for hackathons and programming competitions" />
+    <meta name="author" content="CodeStorm Contest Platform" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <meta property="og:title" content="codestorm-lan-party" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <meta property="og:title" content="CodeStorm 2024 - Coding Contest" />
+    <meta property="og:description" content="Professional offline coding contest platform" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    
+    <meta name="robots" content="noindex, nofollow" />
+    
+    <!-- Disable right-click and dev tools for contest security -->
+    <style>
+      body { user-select: none; }
+      * { -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; }
+    </style>
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Contest security measures -->
+    <script>
+      // Disable common shortcuts in contest mode
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'F12' || 
+            (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+            (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+            (e.ctrlKey && e.key === 'U')) {
+          e.preventDefault();
+          return false;
+        }
+      });
+      
+      // Disable right-click
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+      });
+    </script>
   </body>
 </html>
