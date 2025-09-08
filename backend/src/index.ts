@@ -4,7 +4,17 @@ import * as http from 'http';
 import * as WebSocket from 'ws';
 import authRouter from './routes/auth';
 import problemRouter from './routes/problem';
-import judgeRouter from './routes/judge'; // Import judge router
+import submissionRouter from './routes/submission';
+import judgeRouter from './routes/judge';
+import adminRouter from './routes/admin';
+import publicRouter from './routes/public'; // Import public router
+import contestRouter from './routes/contest';
+import analyticsRouter from './routes/analytics';
+import leaderboardRouter from './routes/leaderboard';
+import attendanceRouter from './routes/attendance';
+import { initWebSocket } from './services/websocketService';
+import { auditLogMiddleware } from './middleware/auditMiddleware'; // Import audit middleware
+import { analyticsJobService } from './services/analyticsJobService';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,38 +23,44 @@ const prisma = new PrismaClient();
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+// Use audit log middleware globally
+app.use(auditLogMiddleware);
+
 // Use auth router
 app.use('/api/auth', authRouter);
 
 // Use problem router
 app.use('/api', problemRouter);
 
+// Use submission router
+app.use('/api', submissionRouter);
+
 // Use judge router
-app.use('/api/judge', judgeRouter); // Use judge router for /api/judge routes
+app.use('/api/judge', judgeRouter);
+
+// Use admin router
+app.use('/api/admin', adminRouter);
+
+// Use contest router
+app.use('/api', contestRouter);
+
+// Use analytics router
+app.use('/api/analytics', analyticsRouter);
+
+// Use leaderboard router
+app.use('/api', leaderboardRouter);
+
+// Use attendance router
+app.use('/api/attendance', attendanceRouter);
+
+// Use public router
+app.use('/api', publicRouter); // Use public router for /api routes
 
 // Create HTTP server
 const server = http.createServer(app);
 
-// Create WebSocket server
-const wss = new WebSocket.Server({ server });
-
-wss.on('connection', (ws: WebSocket) => {
-  console.log('Client connected');
-
-  ws.on('message', (message: string) => {
-    console.log(`Received: ${message}`);
-    // Echo back message
-    ws.send(`You said: ${message}`);
-  });
-
-  ws.on('close', () => {
-    console.log('Client disconnected');
-  });
-
-  ws.on('error', (error: Error) => {
-    console.error('WebSocket error:', error);
-  });
-});
+// Initialize WebSocket server
+initWebSocket(server); // Use the service to initialize WebSocket
 
 // Basic API route
 app.get('/', (req, res) => {
@@ -54,11 +70,15 @@ app.get('/', (req, res) => {
 // Start the server
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  
+  // Start analytics background job
+  analyticsJobService.start();
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM signal received: closing HTTP server');
+  analyticsJobService.stop();
   server.close(() => {
     console.log('HTTP server closed');
   });
@@ -67,6 +87,7 @@ process.on('SIGTERM', async () => {
 
 process.on('SIGINT', async () => {
   console.log('SIGINT signal received: closing HTTP server');
+  analyticsJobService.stop();
   server.close(() => {
     console.log('HTTP server closed');
   });

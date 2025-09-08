@@ -3,45 +3,168 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
-import { Play, Pause, Square, Clock, Settings, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Play, Pause, Square, Clock, Settings, AlertTriangle, Eye, EyeOff, Shield, Users, FileText, Calendar, Server } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { RoleGuard } from "@/components/RoleGuard";
+import { PERMISSIONS } from "@/constants/permissions";
+import { ContestManagement } from "@/components/ContestManagement";
+import { SystemControl } from "@/components/SystemControl";
 
 export function AdminControl() {
-  const [contestPhase, setContestPhase] = useState("Running");
+  const [contestPhase, setContestPhase] = useState("RUNNING");
   const [showPendingPoints, setShowPendingPoints] = useState(true);
   const [emergencyPause, setEmergencyPause] = useState(false);
+  const [isEmergencyDialogOpen, setIsEmergencyDialogOpen] = useState(false);
+  
+  const { hasPermission } = useAuth();
+  
+  // Mock contest data - in real app this would come from API
+  const contestData = {
+    id: "contest_001",
+    name: "CodeStorm 2024 Finals",
+    description: "Annual programming contest",
+    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // Started 2 hours ago
+    endTime: new Date(Date.now() + 1 * 60 * 60 * 1000), // Ends in 1 hour
+    status: contestPhase,
+    participants: 45,
+    problems: 8,
+    totalSubmissions: 127
+  };
   
   const timeProgress = 65; // 65% of contest time elapsed
   const timeRemaining = "21:15";
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
-      case "Setup": return "secondary";
-      case "Reading": return "default";
-      case "Running": return "default";
-      case "Locked": return "destructive";
-      case "Results": return "outline";
+      case "PLANNED": return "secondary";
+      case "RUNNING": return "default";
+      case "ENDED": return "destructive";
+      case "ARCHIVED": return "outline";
       default: return "secondary";
     }
   };
 
-  const phases = ["Setup", "Reading", "Running", "Locked", "Results"];
+  const phases = [
+    { key: "PLANNED", label: "Setup", description: "Contest preparation phase" },
+    { key: "RUNNING", label: "Active", description: "Contest is running" },
+    { key: "ENDED", label: "Ended", description: "Contest has ended" },
+    { key: "ARCHIVED", label: "Archived", description: "Contest archived" }
+  ];
+
+  const handlePhaseChange = (newPhase: string) => {
+    // In real app, this would call API to update contest phase
+    setContestPhase(newPhase);
+    console.log('Phase changed to:', newPhase);
+  };
+
+  const handleEmergencyAction = (action: string) => {
+    // In real app, this would call API for emergency actions
+    console.log('Emergency action:', action);
+    setIsEmergencyDialogOpen(false);
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Contest Control
+            Admin Control Center
           </h1>
           <p className="text-muted-foreground mt-1">
-            Manage contest lifecycle and settings
+            Comprehensive system and contest management
           </p>
         </div>
         
-        <Badge variant={getPhaseColor(contestPhase)} className="text-lg px-4 py-2">
-          {contestPhase} Phase
-        </Badge>
+        <div className="flex items-center gap-4">
+          <Badge variant={getPhaseColor(contestPhase)} className="text-lg px-4 py-2">
+            {phases.find(p => p.key === contestPhase)?.label || contestPhase} Phase
+          </Badge>
+          <div className="text-sm text-muted-foreground">
+            {contestData.name}
+          </div>
+        </div>
+      </div>
+
+      <Tabs defaultValue="contest-control" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="contest-control" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Contest Control
+          </TabsTrigger>
+          <TabsTrigger value="contest-management" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Contest Management
+          </TabsTrigger>
+          <TabsTrigger value="system-control" className="flex items-center gap-2">
+            <Server className="h-4 w-4" />
+            System Control
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="contest-control" className="space-y-6">
+
+      {/* Contest Statistics */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Participants</p>
+                <p className="text-2xl font-bold">{contestData.participants}</p>
+              </div>
+              <Users className="h-8 w-8 text-primary opacity-60" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Problems</p>
+                <p className="text-2xl font-bold">{contestData.problems}</p>
+              </div>
+              <FileText className="h-8 w-8 text-primary opacity-60" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Submissions</p>
+                <p className="text-2xl font-bold">{contestData.totalSubmissions}</p>
+              </div>
+              <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center">
+                <span className="text-sm font-bold">S</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Time Left</p>
+                <p className="text-2xl font-bold font-mono">{timeRemaining}</p>
+              </div>
+              <Clock className="h-8 w-8 text-primary opacity-60" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Contest Timer */}
@@ -60,125 +183,192 @@ export function AdminControl() {
             </div>
             <Progress value={timeProgress} className="h-3" />
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Started: 13:00</span>
-              <span>End: 14:00</span>
+              <span>Started: {contestData.startTime.toLocaleTimeString()}</span>
+              <span>End: {contestData.endTime.toLocaleTimeString()}</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Phase Control */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
-            Phase Control
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-5 gap-3">
-            {phases.map((phase, index) => (
-              <div key={phase} className="text-center space-y-2">
-                <div className={`h-8 w-8 rounded-full mx-auto flex items-center justify-center text-xs font-bold ${
-                  phase === contestPhase 
-                    ? 'bg-primary text-primary-foreground' 
-                    : index < phases.indexOf(contestPhase)
-                    ? 'bg-accepted text-white'
-                    : 'bg-muted text-muted-foreground'
-                }`}>
-                  {index + 1}
+      <RoleGuard requiredPermissions={[PERMISSIONS.PHASE_CONTROL]}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Phase Control
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-4 gap-3">
+              {phases.map((phase, index) => (
+                <div key={phase.key} className="text-center space-y-2">
+                  <div className={`h-8 w-8 rounded-full mx-auto flex items-center justify-center text-xs font-bold ${
+                    phase.key === contestPhase 
+                      ? 'bg-primary text-primary-foreground' 
+                      : 'bg-muted text-muted-foreground'
+                  }`}>
+                    {index + 1}
+                  </div>
+                  <span className="text-sm font-medium">{phase.label}</span>
+                  <Button 
+                    variant={phase.key === contestPhase ? "default" : "outline"}
+                    size="sm"
+                    className="w-full"
+                    disabled={phase.key === contestPhase}
+                    onClick={() => handlePhaseChange(phase.key)}
+                  >
+                    {phase.key === contestPhase ? "Active" : "Start"}
+                  </Button>
                 </div>
-                <span className="text-sm font-medium">{phase}</span>
-                <Button 
-                  variant={phase === contestPhase ? "default" : "outline"}
-                  size="sm"
-                  className="w-full"
-                  disabled={phase === contestPhase}
-                >
-                  {phase === contestPhase ? "Active" : "Start"}
-                </Button>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-6 p-4 bg-muted/30 rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              <strong>Current Phase:</strong> {contestPhase} - Participants can submit solutions and judges can review submissions
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+            
+            <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                <strong>Current Phase:</strong> {phases.find(p => p.key === contestPhase)?.description || 'Unknown phase'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </RoleGuard>
 
       {/* Contest Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            Display Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="font-medium">Show Pending Points on Leaderboard</p>
-              <p className="text-sm text-muted-foreground">
-                Participants can see points for submissions under review
-              </p>
+      <RoleGuard requiredPermissions={[PERMISSIONS.DISPLAY_CONTROL]}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Display Settings
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="font-medium">Show Pending Points on Leaderboard</p>
+                <p className="text-sm text-muted-foreground">
+                  Participants can see points for submissions under review
+                </p>
+              </div>
+              <Switch 
+                checked={showPendingPoints}
+                onCheckedChange={setShowPendingPoints}
+              />
             </div>
-            <Switch 
-              checked={showPendingPoints}
-              onCheckedChange={setShowPendingPoints}
-            />
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="font-medium">Emergency Pause</p>
-              <p className="text-sm text-muted-foreground">
-                Temporarily prevent new submissions without ending contest
-              </p>
+            
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="font-medium">Emergency Pause</p>
+                <p className="text-sm text-muted-foreground">
+                  Temporarily prevent new submissions without ending contest
+                </p>
+              </div>
+              <Switch 
+                checked={emergencyPause}
+                onCheckedChange={setEmergencyPause}
+              />
             </div>
-            <Switch 
-              checked={emergencyPause}
-              onCheckedChange={setEmergencyPause}
-            />
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </RoleGuard>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
-            Emergency Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-3 gap-4">
-            <Button variant="outline" className="h-16 flex-col">
-              <Pause className="h-6 w-6 mb-2" />
-              Pause Contest
-            </Button>
+      {/* Emergency Actions */}
+      <RoleGuard requiredPermissions={[PERMISSIONS.EMERGENCY_ACTIONS]}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Emergency Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="h-16 flex-col">
+                    <Pause className="h-6 w-6 mb-2" />
+                    Pause Contest
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Pause Contest</DialogTitle>
+                    <DialogDescription>
+                      This will temporarily pause the contest. Participants will not be able to submit solutions.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => {}}>Cancel</Button>
+                    <Button onClick={() => handleEmergencyAction('pause')}>Pause Contest</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="h-16 flex-col">
+                    <Play className="h-6 w-6 mb-2" />
+                    Resume Contest
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Resume Contest</DialogTitle>
+                    <DialogDescription>
+                      This will resume the contest. Participants will be able to submit solutions again.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => {}}>Cancel</Button>
+                    <Button onClick={() => handleEmergencyAction('resume')}>Resume Contest</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+              
+              <Dialog open={isEmergencyDialogOpen} onOpenChange={setIsEmergencyDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="destructive" className="h-16 flex-col">
+                    <Square className="h-6 w-6 mb-2" />
+                    Force End
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Force End Contest</DialogTitle>
+                    <DialogDescription>
+                      This will immediately end the contest. This action cannot be undone. All submissions will be locked and results will be finalized.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsEmergencyDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button variant="destructive" onClick={() => handleEmergencyAction('force_end')}>
+                      Force End Contest
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
             
-            <Button variant="outline" className="h-16 flex-col">
-              <Play className="h-6 w-6 mb-2" />
-              Resume Contest
-            </Button>
-            
-            <Button variant="destructive" className="h-16 flex-col">
-              <Square className="h-6 w-6 mb-2" />
-              Force End
-            </Button>
-          </div>
-          
-          <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-            <p className="text-sm text-destructive">
-              <strong>Warning:</strong> Emergency actions will immediately affect all participants. Use with caution.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <p className="text-sm text-destructive">
+                <strong>Warning:</strong> Emergency actions will immediately affect all participants. Use with caution.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </RoleGuard>
+        </TabsContent>
+
+        <TabsContent value="contest-management">
+          <ContestManagement />
+        </TabsContent>
+
+        <TabsContent value="system-control">
+          <SystemControl />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

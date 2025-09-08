@@ -1,162 +1,234 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BarChart3, TrendingUp, Users, FileText, CheckCircle, Clock, Target, Activity } from "lucide-react";
-
-// Mock analytics data
-const mockAnalytics = {
-  overview: {
-    totalSubmissions: 127,
-    acceptedSubmissions: 45,
-    activeParticipants: 23,
-    averageTime: "14:32"
-  },
-  problemStats: [
-    { title: "Two Sum", difficulty: "Easy", submissions: 18, accepted: 12, acceptanceRate: 67 },
-    { title: "Binary Search", difficulty: "Medium", submissions: 15, accepted: 8, acceptanceRate: 53 },
-    { title: "Dynamic Programming", difficulty: "Hard", submissions: 12, accepted: 3, acceptanceRate: 25 },
-    { title: "Graph Traversal", difficulty: "Medium", submissions: 14, accepted: 7, acceptanceRate: 50 }
-  ],
-  recentActivity: [
-    { time: "14:35", action: "Submission accepted", user: "participant_001", problem: "Two Sum" },
-    { time: "14:33", action: "New submission", user: "participant_003", problem: "Binary Search" },
-    { time: "14:30", action: "Submission rejected", user: "participant_002", problem: "DP Basic" },
-    { time: "14:28", action: "User login", user: "participant_005", problem: null }
-  ]
-};
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { BarChart3, TrendingUp, Users, FileText, CheckCircle, Clock, Target, Activity, RefreshCw, AlertCircle } from "lucide-react";
+import { analyticsApi } from "@/lib/api";
+import { AnalyticsDashboard, SystemMetrics } from "@/types/analytics";
+import { ContestAnalytics } from "@/components/ContestAnalytics";
+import { SystemMetrics as SystemMetricsComponent } from "@/components/SystemMetrics";
 
 export function AdminAnalytics() {
-  const acceptanceRate = Math.round((mockAnalytics.overview.acceptedSubmissions / mockAnalytics.overview.totalSubmissions) * 100);
+  const [dashboardData, setDashboardData] = useState<AnalyticsDashboard | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchDashboardData = async () => {
+    try {
+      setError(null);
+      const data = await analyticsApi.getAnalyticsDashboard();
+      setDashboardData(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch analytics data');
+      console.error('Error fetching dashboard data:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchDashboardData();
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+    
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchDashboardData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex items-center gap-2">
+          <RefreshCw className="h-4 w-4 animate-spin" />
+          <span>Loading analytics...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center space-y-4">
+          <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
+          <div>
+            <p className="text-lg font-medium">Failed to load analytics</p>
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+          <Button onClick={handleRefresh} variant="outline">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">No analytics data available</p>
+      </div>
+    );
+  }
+
+  const totalSubmissions = dashboardData.activeContests.reduce((sum, contest) => sum + contest.totalSubmissions, 0);
+  const totalCorrectSubmissions = dashboardData.activeContests.reduce((sum, contest) => sum + contest.correctSubmissions, 0);
+  const totalActiveParticipants = dashboardData.activeContests.reduce((sum, contest) => sum + contest.activeParticipants, 0);
+  const acceptanceRate = totalSubmissions > 0 ? Math.round((totalCorrectSubmissions / totalSubmissions) * 100) : 0;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-            Contest Analytics
+            Analytics Dashboard
           </h1>
           <p className="text-muted-foreground mt-1">
             Real-time statistics and performance metrics
           </p>
         </div>
         
-        <Badge variant="secondary" className="text-lg px-4 py-2">
-          <Activity className="h-4 w-4 mr-2" />
-          Live Data
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant="secondary" className="text-lg px-4 py-2">
+            <Activity className="h-4 w-4 mr-2" />
+            Live Data
+          </Badge>
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            size="sm"
+            disabled={refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Submissions</p>
-                <p className="text-3xl font-bold">{mockAnalytics.overview.totalSubmissions}</p>
-                <p className="text-xs text-muted-foreground mt-1">+12 in last hour</p>
-              </div>
-              <FileText className="h-10 w-10 text-primary opacity-60" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Accepted</p>
-                <p className="text-3xl font-bold text-accepted">{mockAnalytics.overview.acceptedSubmissions}</p>
-                <p className="text-xs text-muted-foreground mt-1">{acceptanceRate}% success rate</p>
-              </div>
-              <CheckCircle className="h-10 w-10 text-accepted opacity-60" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Active Participants</p>
-                <p className="text-3xl font-bold">{mockAnalytics.overview.activeParticipants}</p>
-                <p className="text-xs text-muted-foreground mt-1">of 30 registered</p>
-              </div>
-              <Users className="h-10 w-10 text-primary opacity-60" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Avg. Solution Time</p>
-                <p className="text-3xl font-bold font-mono">{mockAnalytics.overview.averageTime}</p>
-                <p className="text-xs text-muted-foreground mt-1">per problem</p>
-              </div>
-              <Clock className="h-10 w-10 text-primary opacity-60" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <Tabs defaultValue="overview" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="contests">Contest Analytics</TabsTrigger>
+          <TabsTrigger value="system">System Metrics</TabsTrigger>
+        </TabsList>
 
-      {/* Problem Performance */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5" />
-            Problem Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {mockAnalytics.problemStats.map((problem, index) => (
-              <div key={index} className="space-y-2">
+        <TabsContent value="overview" className="space-y-6">
+          {/* Overview Stats */}
+          <div className="grid grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium">{problem.title}</span>
-                    <Badge variant={problem.difficulty === 'Easy' ? 'default' : problem.difficulty === 'Medium' ? 'secondary' : 'destructive'}>
-                      {problem.difficulty}
-                    </Badge>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Submissions</p>
+                    <p className="text-3xl font-bold">{totalSubmissions}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Last updated: {new Date(dashboardData.lastUpdated).toLocaleTimeString()}
+                    </p>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>{problem.accepted}/{problem.submissions} accepted</span>
-                    <span className="font-medium">{problem.acceptanceRate}%</span>
-                  </div>
+                  <FileText className="h-10 w-10 text-primary opacity-60" />
                 </div>
-                <Progress value={problem.acceptanceRate} className="h-2" />
-              </div>
-            ))}
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Accepted</p>
+                    <p className="text-3xl font-bold text-accepted">{totalCorrectSubmissions}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{acceptanceRate}% success rate</p>
+                  </div>
+                  <CheckCircle className="h-10 w-10 text-accepted opacity-60" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Active Participants</p>
+                    <p className="text-3xl font-bold">{totalActiveParticipants}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      across {dashboardData.activeContests.length} contests
+                    </p>
+                  </div>
+                  <Users className="h-10 w-10 text-primary opacity-60" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Active Contests</p>
+                    <p className="text-3xl font-bold">{dashboardData.systemMetrics.activeContests}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      of {dashboardData.systemMetrics.totalContests} total
+                    </p>
+                  </div>
+                  <Target className="h-10 w-10 text-primary opacity-60" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {mockAnalytics.recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-mono text-muted-foreground">{activity.time}</span>
-                  <span className="text-sm">{activity.action}</span>
-                  <Badge variant="outline" className="text-xs">{activity.user}</Badge>
-                </div>
-                {activity.problem && (
-                  <span className="text-sm text-muted-foreground">{activity.problem}</span>
-                )}
+          {/* Active Contests Overview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Active Contests Performance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {dashboardData.activeContests.map((contest) => {
+                  const contestAcceptanceRate = contest.totalSubmissions > 0 
+                    ? Math.round((contest.correctSubmissions / contest.totalSubmissions) * 100) 
+                    : 0;
+                  
+                  return (
+                    <div key={contest.contestId} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium">Contest {contest.contestId.slice(-8)}</span>
+                          <Badge variant="outline" className="text-xs">
+                            {contest.activeParticipants} participants
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>{contest.correctSubmissions}/{contest.totalSubmissions} accepted</span>
+                          <span className="font-medium">{contestAcceptanceRate}%</span>
+                        </div>
+                      </div>
+                      <Progress value={contestAcceptanceRate} className="h-2" />
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="contests">
+          <ContestAnalytics />
+        </TabsContent>
+
+        <TabsContent value="system">
+          <SystemMetricsComponent metrics={dashboardData.systemMetrics} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { 
   Home, 
   FileText, 
@@ -14,6 +13,8 @@ import {
   Activity
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { NAVIGATION_ITEMS } from "@/constants/permissions";
 
 import {
   Sidebar,
@@ -27,52 +28,39 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-// Mock user role - will come from auth context later  
-const userRole = "admin"; // Change this to test different roles: "participant", "judge", "admin"
-
-const participantItems = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Problems", url: "/problems", icon: FileText },
-  { title: "My Submissions", url: "/submissions", icon: Send },
-  { title: "Leaderboard", url: "/leaderboard", icon: Trophy },
-];
-
-const judgeItems = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Judge Queue", url: "/judge", icon: Gavel },
-  { title: "Leaderboard", url: "/leaderboard", icon: Trophy },
-];
-
-const adminItems = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Problems", url: "/problems", icon: FileText },
-  { title: "Judge Queue", url: "/judge", icon: Gavel },
-  { title: "Leaderboard", url: "/leaderboard", icon: Trophy },
-  { title: "Users", url: "/admin/users", icon: Users },
-  { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
-  { title: "Exports", url: "/admin/exports", icon: FileX },
-  { title: "Contest Control", url: "/admin/control", icon: Settings },
-  { title: "Audit Log", url: "/admin/audit", icon: Shield },
-  { title: "Backup", url: "/admin/backup", icon: Database },
-];
-
-const getItemsForRole = (role: string) => {
-  switch (role) {
-    case "judge":
-      return judgeItems;
-    case "admin":
-      return adminItems;
-    default:
-      return participantItems;
-  }
+// Icon mapping
+const iconMap = {
+  Home,
+  FileText,
+  Send,
+  Trophy,
+  Gavel,
+  Settings,
+  Users,
+  BarChart3,
+  FileX,
+  Shield,
+  Database,
+  Activity,
 };
+
+// Convert navigation items to array with icon components
+const navigationItems = Object.values(NAVIGATION_ITEMS).map(item => ({
+  ...item,
+  icon: iconMap[item.icon as keyof typeof iconMap] || Home,
+}));
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const { hasAnyPermission, user } = useAuth();
   const currentPath = location.pathname;
-  const items = getItemsForRole(userRole);
   const collapsed = state === "collapsed";
+
+  // Filter navigation items based on user permissions
+  const visibleItems = navigationItems.filter(item => 
+    hasAnyPermission(item.permissions)
+  );
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
@@ -96,7 +84,7 @@ export function AppSidebar() {
           
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {visibleItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink 
@@ -114,15 +102,23 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Status Indicator */}
-        {!collapsed && (
+        {/* User Info */}
+        {!collapsed && user && (
           <div className="mt-auto p-4 border-t border-sidebar-border">
-            <div className="flex items-center gap-2 text-xs text-sidebar-foreground/60">
-              <Activity className="h-3 w-3 text-accepted animate-pulse" />
-              <span>Contest Active</span>
-            </div>
-            <div className="text-xs text-sidebar-foreground/40 mt-1">
-              LAN Host: 192.168.1.100
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-sidebar-foreground">
+                {user.displayName || user.username}
+              </div>
+              <div className="text-xs text-sidebar-foreground/60">
+                Role: {user.role.name}
+              </div>
+              <div className="flex items-center gap-2 text-xs text-sidebar-foreground/60">
+                <Activity className="h-3 w-3 text-accepted animate-pulse" />
+                <span>Contest Active</span>
+              </div>
+              <div className="text-xs text-sidebar-foreground/40">
+                LAN Host: 192.168.1.100
+              </div>
             </div>
           </div>
         )}
