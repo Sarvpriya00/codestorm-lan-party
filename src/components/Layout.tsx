@@ -19,8 +19,14 @@ export function Layout({ children, requiredPermissions, requireAll = false }: La
     return (
       <div className="min-h-screen bg-background font-sans flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <div className="relative">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary"></div>
+            <div className="absolute inset-0 rounded-full h-12 w-12 border-4 border-transparent border-t-primary/50 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-lg font-medium text-foreground">CodeStorm</p>
+            <p className="text-sm text-muted-foreground">Loading contest platform...</p>
+          </div>
         </div>
       </div>
     );
@@ -40,12 +46,17 @@ export function Layout({ children, requiredPermissions, requireAll = false }: La
     if (!hasPermission) {
       return (
         <div className="min-h-screen bg-background font-sans flex items-center justify-center">
-          <div className="text-center space-y-4">
-            <div className="text-6xl">🚫</div>
-            <h1 className="text-2xl font-bold">Access Denied</h1>
-            <p className="text-muted-foreground">
-              You don't have permission to access this page.
-            </p>
+          <div className="text-center space-y-6 max-w-md mx-auto p-6">
+            <div className="text-6xl mb-4">🚫</div>
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-foreground">Access Denied</h1>
+              <p className="text-muted-foreground">
+                You don't have permission to access this page. Please contact the contest administrator if you believe this is an error.
+              </p>
+            </div>
+            <div className="text-xs text-muted-foreground font-mono bg-muted p-2 rounded">
+              Required permissions: {requiredPermissions.join(', ')}
+            </div>
           </div>
         </div>
       );

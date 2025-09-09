@@ -1,0 +1,22 @@
+{
+  "name": "CodeStorm 2024 - Coding Contest Platform",
+  "short_name": "CodeStorm",
+  "description": "Professional offline coding contest platform for hackathons and programming competitions",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#020617",
+  "orientation": "landscape-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["education", "productivity"],
+  "prefer_related_applications": false
+}

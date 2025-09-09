@@ -1,14 +1,6 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# CodeStorm Contest Platform - Production Configuration
 User-agent: *
-Allow: /
+Disallow: /
+
+# This is a private contest platform
+# Public indexing is disabled for security and privacy
