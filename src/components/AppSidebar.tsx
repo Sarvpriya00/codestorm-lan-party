@@ -59,7 +59,7 @@ export function AppSidebar() {
 
   // Filter navigation items based on user permissions
   const visibleItems = navigationItems.filter(item => 
-    hasAnyPermission(item.permissions)
+    hasAnyPermission([...item.permissions])
   );
 
   const isActive = (path: string) => {

@@ -2,12 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ContestTimer } from "./ContestTimer";
 import { 
   Clock, 
   Trophy, 
   Target, 
-  TrendingUp, 
+  TrendingUp,
   FileText,
   CheckCircle,
   XCircle,
@@ -128,7 +127,21 @@ export function ContestDashboard({ contestId }: ContestDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Contest Timer */}
-      <ContestTimer contestId={contestId} />
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-muted-foreground" />
+                <span className="text-lg font-mono">Contest Timer: 45:23</span>
+              </div>
+              <Badge variant="secondary" className="px-3 py-1">
+                RUNNING
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Contest Header */}
       <div className="flex items-center justify-between">

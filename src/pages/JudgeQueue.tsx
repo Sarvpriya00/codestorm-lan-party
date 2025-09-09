@@ -210,9 +210,9 @@ export function JudgeQueue() {
           <Card 
             key={submission.id} 
             className={`hover:shadow-md transition-shadow border-l-4 ${
-              submission.status === 'PENDING' ? 'border-l-warning' :
-              submission.status === 'UNDER_REVIEW' ? 'border-l-primary' :
-              submission.status === 'ACCEPTED' ? 'border-l-accepted' :
+              (submission as any).status === 'PENDING' ? 'border-l-warning' :
+              (submission as any).status === 'UNDER_REVIEW' ? 'border-l-primary' :
+              (submission as any).status === 'ACCEPTED' ? 'border-l-accepted' :
               'border-l-destructive'
             }`}
           >

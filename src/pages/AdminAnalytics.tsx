@@ -7,8 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, TrendingUp, Users, FileText, CheckCircle, Clock, Target, Activity, RefreshCw, AlertCircle } from "lucide-react";
 import { analyticsApi } from "@/lib/api";
 import { AnalyticsDashboard, SystemMetrics } from "@/types/analytics";
-import { ContestAnalytics } from "@/components/ContestAnalytics";
-import { SystemMetrics as SystemMetricsComponent } from "@/components/SystemMetrics";
 
 export function AdminAnalytics() {
   const [dashboardData, setDashboardData] = useState<AnalyticsDashboard | null>(null);
@@ -20,7 +18,7 @@ export function AdminAnalytics() {
     try {
       setError(null);
       const data = await analyticsApi.getAnalyticsDashboard();
-      setDashboardData(data);
+      setDashboardData(data as any);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch analytics data');
       console.error('Error fetching dashboard data:', err);
@@ -222,11 +220,25 @@ export function AdminAnalytics() {
         </TabsContent>
 
         <TabsContent value="contests">
-          <ContestAnalytics />
+          <Card>
+            <CardHeader>
+              <CardTitle>Contest Analytics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Contest analytics features coming soon...</p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="system">
-          <SystemMetricsComponent metrics={dashboardData.systemMetrics} />
+          <Card>
+            <CardHeader>
+              <CardTitle>System Metrics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">System metrics coming soon...</p>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

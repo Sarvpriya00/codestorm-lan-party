@@ -15,8 +15,8 @@ import {
   Wifi,
   WifiOff
 } from "lucide-react";
-import { AuthContext } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api";
 import websocketService from "@/lib/websocket";
 
 interface LeaderboardEntry {
@@ -48,7 +48,7 @@ export function Leaderboard() {
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
 
   // Get current contest and leaderboard data
   useEffect(() => {
@@ -58,8 +58,8 @@ export function Leaderboard() {
         setError(null);
 
         // Get current contest (assuming there's an active contest)
-        const contestsResponse = await api.get('/contests?status=RUNNING');
-        const contests = contestsResponse.data;
+        const contestsResponse = await apiClient.get('/contests?status=RUNNING');
+        const contests = contestsResponse as any;
         
         if (contests.length === 0) {
           setError('No active contest found');
@@ -70,8 +70,8 @@ export function Leaderboard() {
         setContest(currentContest);
 
         // Get leaderboard for the contest
-        const leaderboardResponse = await api.get(`/analytics/leaderboard/${currentContest.id}`);
-        setLeaderboard(leaderboardResponse.data);
+        const leaderboardResponse = await apiClient.get(`/analytics/leaderboard/${currentContest.id}`);
+        setLeaderboard(leaderboardResponse as any);
 
       } catch (err) {
         console.error('Error fetching leaderboard data:', err);

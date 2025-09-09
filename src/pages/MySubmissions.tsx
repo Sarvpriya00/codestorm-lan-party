@@ -21,7 +21,7 @@ import { StatusBadge, Status } from "@/components/StatusBadge";
 import { Search, FileText, Clock, Eye, Calendar, Wifi, WifiOff } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
+import { apiClient } from "@/lib/api";
 import websocketService from "@/lib/websocket";
 
 // Updated submission interface based on new schema
@@ -182,8 +182,8 @@ export function MySubmissions() {
         setLoading(true);
         setError(null);
         
-        const response = await api.get(`/submissions/user/${user.id}`);
-        setSubmissions(response.data);
+        const response = await apiClient.get(`/submissions/user/${user.id}`);
+        setSubmissions(response as Submission[]);
       } catch (err) {
         console.error('Error fetching submissions:', err);
         setError('Failed to load submissions');
