@@ -24,45 +24,45 @@ import {
   exportStandingsCsv,
 } from '../controllers/adminController';
 import { authenticateToken, authorizeRoles } from '../middleware/authMiddleware';
-import { Role } from '@prisma/client';
+
 import * as bcrypt from 'bcryptjs'; // Import bcrypt for user creation
 
 const router = Router();
 
 // Dashboard
-router.get('/dashboard', authenticateToken, authorizeRoles([Role.ADMIN]), getDashboardData);
+router.get('/dashboard', authenticateToken, authorizeRoles(['ADMIN']), getDashboardData);
 
 // Problems
-router.post('/problems', authenticateToken, authorizeRoles([Role.ADMIN]), createProblem);
-router.put('/problems/:id', authenticateToken, authorizeRoles([Role.ADMIN]), updateProblem);
+router.post('/problems', authenticateToken, authorizeRoles(['ADMIN']), createProblem);
+router.put('/problems/:id', authenticateToken, authorizeRoles(['ADMIN']), updateProblem);
 
 // Users
-router.get('/users', authenticateToken, authorizeRoles([Role.ADMIN]), getUsers);
-router.post('/users', authenticateToken, authorizeRoles([Role.ADMIN]), createUser);
-router.put('/users/:id/role', authenticateToken, authorizeRoles([Role.ADMIN]), updateUserRole);
+router.get('/users', authenticateToken, authorizeRoles(['ADMIN']), getUsers);
+router.post('/users', authenticateToken, authorizeRoles(['ADMIN']), createUser);
+router.put('/users/:id/role', authenticateToken, authorizeRoles(['ADMIN']), updateUserRole);
 
 // Contest Control
-router.post('/contest/state', authenticateToken, authorizeRoles([Role.ADMIN]), updateContestState);
-router.post('/contest/emergency', authenticateToken, authorizeRoles([Role.ADMIN]), performEmergencyAction);
-router.get('/contest/:contestId/controls', authenticateToken, authorizeRoles([Role.ADMIN]), getSystemControls);
-router.get('/contest/:contestId/state', authenticateToken, authorizeRoles([Role.ADMIN]), getContestState);
+router.post('/contest/state', authenticateToken, authorizeRoles(['ADMIN']), updateContestState);
+router.post('/contest/emergency', authenticateToken, authorizeRoles(['ADMIN']), performEmergencyAction);
+router.get('/contest/:contestId/controls', authenticateToken, authorizeRoles(['ADMIN']), getSystemControls);
+router.get('/contest/:contestId/state', authenticateToken, authorizeRoles(['ADMIN']), getContestState);
 
 // Audit Log
-router.get('/audit-logs', authenticateToken, authorizeRoles([Role.ADMIN]), getAuditLogs);
-router.get('/audit-logs/user/:userId', authenticateToken, authorizeRoles([Role.ADMIN]), getUserAuditLogs);
-router.get('/audit-logs/statistics', authenticateToken, authorizeRoles([Role.ADMIN]), getAuditStatistics);
-router.post('/audit-logs/cleanup', authenticateToken, authorizeRoles([Role.ADMIN]), cleanupAuditLogs);
+router.get('/audit-logs', authenticateToken, authorizeRoles(['ADMIN']), getAuditLogs);
+router.get('/audit-logs/user/:userId', authenticateToken, authorizeRoles(['ADMIN']), getUserAuditLogs);
+router.get('/audit-logs/statistics', authenticateToken, authorizeRoles(['ADMIN']), getAuditStatistics);
+router.post('/audit-logs/cleanup', authenticateToken, authorizeRoles(['ADMIN']), cleanupAuditLogs);
 
 // Backup and Data Management
-router.post('/backups', authenticateToken, authorizeRoles([Role.ADMIN]), createBackup);
-router.get('/backups', authenticateToken, authorizeRoles([Role.ADMIN]), getBackups);
-router.post('/backups/:backupId/restore', authenticateToken, authorizeRoles([Role.ADMIN]), restoreBackup);
-router.delete('/backups/:backupId', authenticateToken, authorizeRoles([Role.ADMIN]), deleteBackup);
-router.get('/backups/:backupId/validate', authenticateToken, authorizeRoles([Role.ADMIN]), validateBackup);
-router.post('/export', authenticateToken, authorizeRoles([Role.ADMIN]), exportData);
+router.post('/backups', authenticateToken, authorizeRoles(['ADMIN']), createBackup);
+router.get('/backups', authenticateToken, authorizeRoles(['ADMIN']), getBackups);
+router.post('/backups/:backupId/restore', authenticateToken, authorizeRoles(['ADMIN']), restoreBackup);
+router.delete('/backups/:backupId', authenticateToken, authorizeRoles(['ADMIN']), deleteBackup);
+router.get('/backups/:backupId/validate', authenticateToken, authorizeRoles(['ADMIN']), validateBackup);
+router.post('/export', authenticateToken, authorizeRoles(['ADMIN']), exportData);
 
 // Legacy Exports (keep for backward compatibility)
-router.get('/exports/submissions', authenticateToken, authorizeRoles([Role.ADMIN]), exportSubmissionsCsv);
-router.get('/exports/standings', authenticateToken, authorizeRoles([Role.ADMIN]), exportStandingsCsv);
+router.get('/exports/submissions', authenticateToken, authorizeRoles(['ADMIN']), exportSubmissionsCsv);
+router.get('/exports/standings', authenticateToken, authorizeRoles(['ADMIN']), exportStandingsCsv);
 
 export default router;

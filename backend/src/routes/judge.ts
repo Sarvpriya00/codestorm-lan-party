@@ -12,26 +12,26 @@ import {
   getJudgeStatistics
 } from '../controllers/judgeController';
 import { authenticateToken, authorizeRoles } from '../middleware/authMiddleware';
-import { Role } from '@prisma/client';
+
 
 const router = Router();
 
 // Queue management endpoints
-router.get('/queue', authenticateToken, authorizeRoles([Role.JUDGE]), getJudgeQueue);
-router.get('/queue/statistics', authenticateToken, authorizeRoles([Role.JUDGE]), getQueueStatistics);
-router.get('/active', authenticateToken, authorizeRoles([Role.JUDGE]), getActiveSubmissions);
+router.get('/queue', authenticateToken, authorizeRoles(['JUDGE']), getJudgeQueue);
+router.get('/queue/statistics', authenticateToken, authorizeRoles(['JUDGE']), getQueueStatistics);
+router.get('/active', authenticateToken, authorizeRoles(['JUDGE']), getActiveSubmissions);
 
 // Submission claiming endpoints
-router.post('/claim/:submissionId', authenticateToken, authorizeRoles([Role.JUDGE]), claimSubmission);
-router.post('/release/:submissionId', authenticateToken, authorizeRoles([Role.JUDGE]), releaseSubmission);
+router.post('/claim/:submissionId', authenticateToken, authorizeRoles(['JUDGE']), claimSubmission);
+router.post('/release/:submissionId', authenticateToken, authorizeRoles(['JUDGE']), releaseSubmission);
 
 // Review and scoring endpoints
-router.post('/review', authenticateToken, authorizeRoles([Role.JUDGE]), submitReview);
-router.get('/review/:submissionId', authenticateToken, authorizeRoles([Role.JUDGE]), getReview);
-router.get('/reviews', authenticateToken, authorizeRoles([Role.JUDGE]), getJudgeReviews);
-router.get('/statistics', authenticateToken, authorizeRoles([Role.JUDGE]), getJudgeStatistics);
+router.post('/review', authenticateToken, authorizeRoles(['JUDGE']), submitReview);
+router.get('/review/:submissionId', authenticateToken, authorizeRoles(['JUDGE']), getReview);
+router.get('/reviews', authenticateToken, authorizeRoles(['JUDGE']), getJudgeReviews);
+router.get('/statistics', authenticateToken, authorizeRoles(['JUDGE']), getJudgeStatistics);
 
 // Verdict posting (legacy endpoint, kept for backward compatibility)
-router.post('/verdict', authenticateToken, authorizeRoles([Role.JUDGE]), postVerdict);
+router.post('/verdict', authenticateToken, authorizeRoles(['JUDGE']), postVerdict);
 
 export default router;

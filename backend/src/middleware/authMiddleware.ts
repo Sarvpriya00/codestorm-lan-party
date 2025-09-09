@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
-import { Role, Permission } from '@prisma/client';
+import { Permission } from '@prisma/client';
 import { permissionService } from '../services/permissionService';
 import { PrismaClient } from '@prisma/client';
 
@@ -12,14 +12,14 @@ const prisma = new PrismaClient();
 
 interface AuthRequest extends Request {
   userId?: string;
-  userRole?: Role;
+  userRole?: string;
   userPermissions?: Permission[];
   ipAddress?: string;
 }
 
 interface JWTPayload {
   userId: string;
-  role: Role;
+  role: string;
   roleId: string;
   iat?: number;
   exp?: number;
@@ -92,7 +92,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 /**
  * Legacy role-based authorization (maintained for backward compatibility)
  */
-export const authorizeRoles = (roles: Role[]) => {
+export const authorizeRoles = (roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.userRole || !roles.includes(req.userRole)) {
       return res.status(403).json({ 
@@ -177,7 +177,7 @@ export const authorizePermissions = (requiredPermissions: number[]) => {
  * Flexible authorization that accepts either roles or permissions
  */
 export const authorize = (options: {
-  roles?: Role[];
+  roles?: string[];
   permissions?: number[];
   requireAll?: boolean; // If true, user must have ALL permissions, if false, user needs ANY permission
 }) => {

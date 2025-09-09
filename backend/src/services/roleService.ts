@@ -228,7 +228,7 @@ export class RoleService {
     permissionAssignments: { permissionId: string; inherited?: boolean }[]
   ): Promise<RolePermission[]> {
     // Validate role exists
-    const role = await prisma.role.findUnique({
+    const role = await this.prisma.role.findUnique({
       where: { id: roleId }
     });
 

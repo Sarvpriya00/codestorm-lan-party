@@ -7,7 +7,7 @@ export interface CreateReviewRequest {
   submissionId: string;
   correct: boolean;
   scoreAwarded: number;
-  remarks?: string;
+  remarks?: string | null;
 }
 
 export interface ReviewResult {
@@ -19,7 +19,7 @@ export interface ReviewResult {
   timestamp: Date;
   correct: boolean;
   scoreAwarded: number;
-  remarks?: string;
+  remarks?: string | null;
   submission: {
     id: string;
     status: SubmissionStatus;
@@ -222,7 +222,7 @@ export class ReviewService {
 
       // Calculate the best score for this problem
       const bestScore = Math.max(
-        ...allAcceptedSubmissions.map(sub => sub.review?.scoreAwarded || 0)
+        ...allAcceptedSubmissions.map((sub: any) => sub.review?.scoreAwarded || 0)
       );
 
       // Check if this is the first time solving this problem
@@ -235,13 +235,13 @@ export class ReviewService {
       } else {
         // Not first time - check if this is a better score
         // Find the previous best score (excluding current submission)
-        const otherSubmissions = allAcceptedSubmissions.filter(sub => 
+        const otherSubmissions = allAcceptedSubmissions.filter((sub: any) => 
           sub.review?.scoreAwarded !== scoreAwarded
         );
         
         if (otherSubmissions.length > 0) {
           const previousBestScore = Math.max(
-            ...otherSubmissions.map(sub => sub.review?.scoreAwarded || 0)
+            ...otherSubmissions.map((sub: any) => sub.review?.scoreAwarded || 0)
           );
           
           if (scoreAwarded > previousBestScore) {

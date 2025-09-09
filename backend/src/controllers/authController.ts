@@ -19,6 +19,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
       where: { username },
+      include: { role: true }, // Include the related Role model
     });
 
     if (!user) {
@@ -37,7 +38,7 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: '1h' } // Token expires in 1 hour
     );
 
-    res.status(200).json({ token, user: { id: user.id, username: user.username, role: user.role } });
+    res.status(200).json({ token, user: { id: user.id, username: user.username, role: user.role.name } });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error' });

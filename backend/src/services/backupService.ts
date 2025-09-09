@@ -41,7 +41,7 @@ export interface BackupData {
     submissions?: any[];
     reviews?: any[];
     auditLogs?: any[];
-    [key: string]: any[];
+    [key: string]: any[] | undefined;
   };
   files?: string[];
 }

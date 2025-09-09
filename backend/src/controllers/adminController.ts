@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient, Role } from '@prisma/client'; // Import PrismaClient
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { broadcastMessage } from '../services/websocketService';
 import { Parser } from 'json2csv'; // Changed import back to named import
@@ -11,7 +11,7 @@ const prisma = new PrismaClient(); // Added this line back
 
 interface AuthRequest extends Request {
   userId?: string;
-  userRole?: Role;
+  userRole?: string;
 }
 
 export const getDashboardData = async (req: AuthRequest, res: Response) => {
@@ -69,21 +69,20 @@ export const getDashboardData = async (req: AuthRequest, res: Response) => {
 };
 
 export const createProblem = async (req: AuthRequest, res: Response) => {
-  const { title, description, difficulty, points, test_cases, hidden_judge_notes } = req.body;
+  const { title, description, difficulty, points } = req.body;
 
-  if (!title || !description || !difficulty || points === undefined || !test_cases) {
+  if (!title || !description || !difficulty || points === undefined) {
     return res.status(400).json({ message: 'Missing required problem fields' });
   }
 
   try {
-    const newProblem = await prisma.problem.create({
+    const newProblem = await prisma.questionProblem.create({
       data: {
-        title,
-        description,
-        difficulty,
-        points,
-        test_cases,
-        hidden_judge_notes,
+        questionText: `${title}\n\n${description}`,
+        difficultyLevel: difficulty,
+        maxScore: points,
+        isActive: true, // Assuming new problems are active by default
+        createdById: req.userId, // Assuming the user creating the problem is the current authenticated user
       },
     });
 
@@ -96,20 +95,18 @@ export const createProblem = async (req: AuthRequest, res: Response) => {
   }
 };
 
+
 export const updateProblem = async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const { title, description, difficulty, points, test_cases, hidden_judge_notes } = req.body;
+  const { title, description, difficulty, points } = req.body;
 
   try {
-    const updatedProblem = await prisma.problem.update({
+    const updatedProblem = await prisma.questionProblem.update({
       where: { id },
       data: {
-        title,
-        description,
-        difficulty,
-        points,
-        test_cases,
-        hidden_judge_notes,
+        questionText: title ? `${title}\n\n${description}` : undefined,
+        difficultyLevel: difficulty || undefined,
+        maxScore: points || undefined,
       },
     });
 
@@ -121,6 +118,7 @@ export const updateProblem = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 export const getUsers = async (req: AuthRequest, res: Response) => {
   try {
@@ -145,7 +143,7 @@ export const createUser = async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ message: 'Username, password, and role are required' });
   }
 
-  if (!Object.values(Role).includes(role)) {
+  if (!['ADMIN', 'JUDGE', 'PARTICIPANT', 'ORGANIZER', 'MENTOR'].includes(role)) {
     return res.status(400).json({ message: 'Invalid role provided' });
   }
 
@@ -173,7 +171,7 @@ export const updateUserRole = async (req: AuthRequest, res: Response) => {
     return res.status(400).json({ message: 'Role is required' });
   }
 
-  if (!Object.values(Role).includes(role)) {
+  if (!['ADMIN', 'JUDGE', 'PARTICIPANT', 'ORGANIZER', 'MENTOR'].includes(role)) {
     return res.status(400).json({ message: 'Invalid role provided' });
   }
 
@@ -276,14 +274,14 @@ export const exportSubmissionsCsv = async (req: AuthRequest, res: Response) => {
   try {
     const submissions = await prisma.submission.findMany({
       include: {
-        user: {
+        submittedBy: {
           select: {
             username: true,
           },
         },
         problem: {
           select: {
-            title: true,
+            questionText: true,
           },
         },
       },
@@ -291,8 +289,8 @@ export const exportSubmissionsCsv = async (req: AuthRequest, res: Response) => {
 
     const fields = [
       { label: 'Submission ID', value: 'id' },
-      { label: 'Username', value: 'user.username' },
-      { label: 'Problem Title', value: 'problem.title' },
+      { label: 'Username', value: 'submittedBy.username' },
+      { label: 'Problem Title', value: 'problem.questionText' },
       { label: 'Language', value: 'language' },
       { label: 'Status', value: 'status' },
       { label: 'Attempt Count', value: 'attemptCount' },

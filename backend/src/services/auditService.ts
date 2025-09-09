@@ -21,13 +21,13 @@ export interface AuditLogResponse extends AuditLog {
   user?: {
     id: string;
     username: string;
-    displayName?: string;
-  };
+    displayName?: string | null;
+  } | null;
   permission?: {
     id: string;
     code: number;
     name: string;
-  };
+  } | null;
 }
 
 // Audit Action Types

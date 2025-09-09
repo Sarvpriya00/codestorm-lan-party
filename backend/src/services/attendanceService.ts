@@ -36,10 +36,10 @@ export interface AttendanceReport {
   participants: {
     userId: string;
     username: string;
-    displayName?: string;
+    displayName?: string | null;
     status: AttendanceStatus;
     checkinTime?: Date;
-    checkoutTime?: Date;
+    checkoutTime?: Date | null;
     duration?: number; // in minutes
   }[];
 }

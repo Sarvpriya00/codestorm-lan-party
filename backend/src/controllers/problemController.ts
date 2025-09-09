@@ -56,6 +56,7 @@ export const getProblems = async (req: Request, res: Response) => {
               contestId: contestId as string
             },
             select: {
+              contestId: true,
               order: true,
               points: true
             }
@@ -122,8 +123,8 @@ export const getProblems = async (req: Request, res: Response) => {
       createdBy: problem.createdBy,
       contests: problem.contestProblems.map(cp => ({
         contestId: cp.contestId,
-        contestName: cp.contest?.name,
-        contestStatus: cp.contest?.status,
+        contestName: (cp as any).contest?.name,
+        contestStatus: (cp as any).contest?.status,
         order: cp.order,
         points: cp.points
       })),

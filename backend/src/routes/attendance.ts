@@ -12,7 +12,7 @@ import {
   trackActivity
 } from '../controllers/attendanceController';
 import { authenticateToken, authorizeRoles } from '../middleware/authMiddleware';
-import { Role } from '@prisma/client';
+
 
 const router = Router();
 
@@ -22,14 +22,14 @@ router.post('/checkout', authenticateToken, checkOut);
 router.post('/track-activity', authenticateToken, trackActivity);
 
 // Attendance management (for admins and judges)
-router.put('/status', authenticateToken, authorizeRoles([Role.ADMIN, Role.JUDGE]), updateAttendanceStatus);
-router.get('/records', authenticateToken, authorizeRoles([Role.ADMIN, Role.JUDGE]), getAttendanceRecords);
-router.get('/contest/:contestId', authenticateToken, authorizeRoles([Role.ADMIN, Role.JUDGE]), getContestAttendance);
-router.get('/user/:userId', authenticateToken, authorizeRoles([Role.ADMIN, Role.JUDGE]), getUserAttendance);
+router.put('/status', authenticateToken, authorizeRoles(['ADMIN', 'JUDGE']), updateAttendanceStatus);
+router.get('/records', authenticateToken, authorizeRoles(['ADMIN', 'JUDGE']), getAttendanceRecords);
+router.get('/contest/:contestId', authenticateToken, authorizeRoles(['ADMIN', 'JUDGE']), getContestAttendance);
+router.get('/user/:userId', authenticateToken, authorizeRoles(['ADMIN', 'JUDGE']), getUserAttendance);
 
 // Reporting (admin only)
-router.get('/report/:contestId', authenticateToken, authorizeRoles([Role.ADMIN]), generateAttendanceReport);
-router.get('/statistics', authenticateToken, authorizeRoles([Role.ADMIN]), getAttendanceStatistics);
-router.post('/contest/:contestId/mark-absent', authenticateToken, authorizeRoles([Role.ADMIN]), markAbsentUsers);
+router.get('/report/:contestId', authenticateToken, authorizeRoles(['ADMIN']), generateAttendanceReport);
+router.get('/statistics', authenticateToken, authorizeRoles(['ADMIN']), getAttendanceStatistics);
+router.post('/contest/:contestId/mark-absent', authenticateToken, authorizeRoles(['ADMIN']), markAbsentUsers);
 
 export default router;

@@ -7,11 +7,11 @@ export interface LeaderboardEntry {
   contestId: string;
   userId: string;
   username: string;
-  displayName?: string;
+  displayName?: string | null;
   rank: number;
   score: number;
   problemsSolved: number;
-  lastSubmissionTime?: Date;
+  lastSubmissionTime?: Date | null;
 }
 
 export interface LeaderboardFilters {
@@ -307,7 +307,7 @@ export class LeaderboardService {
   async getGlobalLeaderboard(limit: number = 20): Promise<{
     userId: string;
     username: string;
-    displayName?: string;
+    displayName?: string | null;
     totalScore: number;
     totalProblemsSolved: number;
     contestsParticipated: number;

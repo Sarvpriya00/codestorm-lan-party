@@ -153,27 +153,29 @@ export const broadcastMessage = (type: string, payload: any, options: BroadcastO
 
   const messageString = JSON.stringify(message);
 
-  wss.clients.forEach((client: AuthenticatedWebSocket) => {
+  wss.clients.forEach((client) => {
     if (client.readyState !== WebSocket.OPEN) return;
 
+    const authenticatedClient = client as AuthenticatedWebSocket;
+
     // Skip if targeting specific user and this isn't them
-    if (options.targetUserId && client.userId !== options.targetUserId) return;
+    if (options.targetUserId && authenticatedClient.userId !== options.targetUserId) return;
 
     // Skip if excluding specific user and this is them
-    if (options.excludeUserId && client.userId === options.excludeUserId) return;
+    if (options.excludeUserId && authenticatedClient.userId === options.excludeUserId) return;
 
     // Check contest membership if required
-    if (options.contestId && client.contestId !== options.contestId) return;
+    if (options.contestId && authenticatedClient.contestId !== options.contestId) return;
 
     // Check permissions if required
     if (options.requiredPermissions && options.requiredPermissions.length > 0) {
       const hasPermission = options.requiredPermissions.some(perm => 
-        client.permissions?.includes(perm)
+        authenticatedClient.permissions?.includes(perm)
       );
       if (!hasPermission) return;
     }
 
-    client.send(messageString);
+    authenticatedClient.send(messageString);
   });
 
   console.log(`Broadcasted message: ${type} to ${Array.from(wss.clients).length} clients`);

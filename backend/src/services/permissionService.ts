@@ -182,7 +182,7 @@ export class PermissionService {
   /**
    * Update permission hierarchy
    */
-  async updatePermissionParent(permissionId: string, newParentId?: string): Promise<Permission> {
+  async updatePermissionParent(permissionId: string, newParentId?: string | null): Promise<Permission> {
     // Validate permission exists
     const permission = await this.prisma.permission.findUnique({
       where: { id: permissionId }
@@ -219,14 +219,14 @@ export class PermissionService {
    * Check if setting a parent would create a circular reference
    */
   private async wouldCreateCycle(permissionId: string, potentialParentId: string): Promise<boolean> {
-    let currentParentId = potentialParentId;
+    let currentParentId: string | null = potentialParentId;
     
     while (currentParentId) {
       if (currentParentId === permissionId) {
         return true; // Cycle detected
       }
       
-      const parent = await this.prisma.permission.findUnique({
+      const parent: Permission | null = await this.prisma.permission.findUnique({
         where: { id: currentParentId }
       });
       
