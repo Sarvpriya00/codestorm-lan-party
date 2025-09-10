@@ -32,7 +32,7 @@ const mockParticipants: ParticipantMetricsType[] = [
     problemsSolved: 12,
     averageScore: 25.0,
     rank: 1,
-    lastSubmissionTime: new Date('2024-01-15T14:30:00'),
+    lastSubmissionTime: new Date('2025-01-15T14:30:00'),
     contestsParticipated: 3
   },
   {
@@ -45,7 +45,7 @@ const mockParticipants: ParticipantMetricsType[] = [
     problemsSolved: 10,
     averageScore: 25.3,
     rank: 2,
-    lastSubmissionTime: new Date('2024-01-15T13:45:00'),
+    lastSubmissionTime: new Date('2025-01-15T13:45:00'),
     contestsParticipated: 2
   },
   {
@@ -58,7 +58,7 @@ const mockParticipants: ParticipantMetricsType[] = [
     problemsSolved: 15,
     averageScore: 18.8,
     rank: 3,
-    lastSubmissionTime: new Date('2024-01-15T15:20:00'),
+    lastSubmissionTime: new Date('2025-01-15T15:20:00'),
     contestsParticipated: 4
   },
   {
@@ -71,7 +71,7 @@ const mockParticipants: ParticipantMetricsType[] = [
     problemsSolved: 8,
     averageScore: 24.2,
     rank: 4,
-    lastSubmissionTime: new Date('2024-01-15T12:15:00'),
+    lastSubmissionTime: new Date('2025-01-15T12:15:00'),
     contestsParticipated: 2
   },
   {
@@ -84,7 +84,7 @@ const mockParticipants: ParticipantMetricsType[] = [
     problemsSolved: 7,
     averageScore: 25.0,
     rank: 5,
-    lastSubmissionTime: new Date('2024-01-15T11:30:00'),
+    lastSubmissionTime: new Date('2025-01-15T11:30:00'),
     contestsParticipated: 1
   }
 ];

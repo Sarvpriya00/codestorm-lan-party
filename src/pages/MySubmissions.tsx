@@ -76,7 +76,7 @@ const mockSubmissions: Submission[] = [
     },
     contest: {
       id: "contest_001",
-      name: "CodeStorm 2024 Finals"
+      name: "CodeStorm 2025 Finals"
     },
     review: {
       id: "rev_001",
@@ -104,7 +104,7 @@ const mockSubmissions: Submission[] = [
     },
     contest: {
       id: "contest_001",
-      name: "CodeStorm 2024 Finals"
+      name: "CodeStorm 2025 Finals"
     }
   },
   {
@@ -155,7 +155,7 @@ const mockSubmissions: Submission[] = [
     },
     contest: {
       id: "contest_001",
-      name: "CodeStorm 2024 Finals"
+      name: "CodeStorm 2025 Finals"
     }
   }
 ];

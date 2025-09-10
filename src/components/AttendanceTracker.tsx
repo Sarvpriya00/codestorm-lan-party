@@ -38,8 +38,8 @@ export function AttendanceTracker() {
       userId: "user1",
       username: "participant_001",
       displayName: "Alice Johnson",
-      checkinTime: new Date('2024-01-15T09:00:00'),
-      checkoutTime: new Date('2024-01-15T17:30:00'),
+      checkinTime: new Date('2025-01-15T09:00:00'),
+      checkoutTime: new Date('2025-01-15T17:30:00'),
       status: "PRESENT"
     },
     {
@@ -48,8 +48,8 @@ export function AttendanceTracker() {
       userId: "user2",
       username: "participant_002",
       displayName: "Bob Smith",
-      checkinTime: new Date('2024-01-15T09:15:00'),
-      checkoutTime: new Date('2024-01-15T16:45:00'),
+      checkinTime: new Date('2025-01-15T09:15:00'),
+      checkoutTime: new Date('2025-01-15T16:45:00'),
       status: "PRESENT"
     },
     {
@@ -58,7 +58,7 @@ export function AttendanceTracker() {
       userId: "user3",
       username: "participant_003",
       displayName: "Carol Davis",
-      checkinTime: new Date('2024-01-15T09:30:00'),
+      checkinTime: new Date('2025-01-15T09:30:00'),
       checkoutTime: undefined,
       status: "PRESENT"
     },
@@ -68,8 +68,8 @@ export function AttendanceTracker() {
       userId: "user4",
       username: "participant_004",
       displayName: "David Wilson",
-      checkinTime: new Date('2024-01-15T10:00:00'),
-      checkoutTime: new Date('2024-01-15T14:30:00'),
+      checkinTime: new Date('2025-01-15T10:00:00'),
+      checkoutTime: new Date('2025-01-15T14:30:00'),
       status: "PRESENT"
     },
     {
@@ -78,14 +78,14 @@ export function AttendanceTracker() {
       userId: "user5",
       username: "participant_005",
       displayName: "Eva Brown",
-      checkinTime: new Date('2024-01-15T09:00:00'),
+      checkinTime: new Date('2025-01-15T09:00:00'),
       checkoutTime: undefined,
       status: "ABSENT"
     }
   ];
 
   const mockContests = [
-    { id: "contest1", name: "Spring Programming Contest 2024", status: "RUNNING" },
+    { id: "contest1", name: "Spring Programming Contest 2025", status: "RUNNING" },
     { id: "contest2", name: "Algorithm Challenge", status: "ENDED" },
     { id: "contest3", name: "Data Structures Marathon", status: "PLANNED" }
   ];

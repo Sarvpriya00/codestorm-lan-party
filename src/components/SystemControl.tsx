@@ -33,8 +33,7 @@ import {
   Shield,
   Clock
 } from "lucide-react";
-import { RoleGuard } from "@/components/RoleGuard";
-import { PERMISSIONS } from "@/constants/permissions";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SystemStatus {
   server: "online" | "offline" | "maintenance";
@@ -59,6 +58,7 @@ export function SystemControl() {
   const [autoBackup, setAutoBackup] = useState(true);
   const [debugMode, setDebugMode] = useState(false);
   const [isRestartDialogOpen, setIsRestartDialogOpen] = useState(false);
+  const { hasPermission } = useAuth();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -245,7 +245,7 @@ export function SystemControl() {
       </div>
 
       {/* System Settings */}
-      <RoleGuard requiredPermissions={[PERMISSIONS.EMERGENCY_ACTIONS]}>
+      {hasPermission(840) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -294,10 +294,10 @@ export function SystemControl() {
             </div>
           </CardContent>
         </Card>
-      </RoleGuard>
+      )}
 
       {/* System Actions */}
-      <RoleGuard requiredPermissions={[PERMISSIONS.EMERGENCY_ACTIONS]}>
+      {hasPermission(840) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -390,7 +390,7 @@ export function SystemControl() {
             </div>
           </CardContent>
         </Card>
-      </RoleGuard>
+      )}
 
       {/* System Logs Preview */}
       <Card>
@@ -404,25 +404,25 @@ export function SystemControl() {
           <div className="space-y-2 font-mono text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Clock className="h-3 w-3" />
-              <span>2024-01-15 14:32:15</span>
+              <span>2025-01-15 14:32:15</span>
               <span>INFO</span>
               <span>System startup completed successfully</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Clock className="h-3 w-3" />
-              <span>2024-01-15 14:30:42</span>
+              <span>2025-01-15 14:30:42</span>
               <span>INFO</span>
               <span>Database connection established</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Clock className="h-3 w-3" />
-              <span>2024-01-15 14:30:01</span>
+              <span>2025-01-15 14:30:01</span>
               <span>INFO</span>
               <span>Contest service initialized</span>
             </div>
             <div className="flex items-center gap-2 text-accepted">
               <Clock className="h-3 w-3" />
-              <span>2024-01-15 14:29:45</span>
+              <span>2025-01-15 14:29:45</span>
               <span>INFO</span>
               <span>User authentication service started</span>
             </div>

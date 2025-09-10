@@ -9,7 +9,6 @@ import {
   User,
   Lock,
   Wifi,
-  Monitor,
   AlertTriangle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,7 +17,6 @@ import { useNavigate } from "react-router-dom";
 export function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [pcCode, setPcCode] = useState("");
   const [error, setError] = useState("");
   
   const { login, isAuthenticated, isLoading } = useAuth();
@@ -36,7 +34,7 @@ export function Login() {
     setError("");
 
     try {
-      await login(username, password, pcCode);
+      await login(username, password);
       navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -53,7 +51,7 @@ export function Login() {
           </div>
           <div>
             <h1 className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              CodeStorm 2024
+              CodeStorm 2025
             </h1>
             <p className="text-muted-foreground">
               Offline Coding Contest Platform
@@ -61,21 +59,7 @@ export function Login() {
           </div>
         </div>
 
-        {/* System Info */}
-        <Card className="bg-card/50 border-border/50 backdrop-blur-sm">
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Wifi className="h-4 w-4 text-accepted" />
-                <span>LAN Connected</span>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Monitor className="h-4 w-4 text-primary" />
-                <span>Host: 192.168.1.100</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        
 
         {/* Login Form */}
         <Card className="bg-gradient-card border-border/50 shadow-card">
@@ -119,21 +103,7 @@ export function Login() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="pcCode" className="flex items-center gap-2">
-                  <Monitor className="h-4 w-4" />
-                  PC Access Code
-                  <span className="text-xs text-muted-foreground">(optional)</span>
-                </Label>
-                <Input
-                  id="pcCode"
-                  type="text"
-                  value={pcCode}
-                  onChange={(e) => setPcCode(e.target.value)}
-                  placeholder="PC-001"
-                  className="font-mono"
-                />
-              </div>
+              
 
               {error && (
                 <Alert variant="destructive">
@@ -161,7 +131,6 @@ export function Login() {
               <p className="font-medium text-foreground">First time logging in?</p>
               <ul className="space-y-1 text-xs">
                 <li>• Use credentials from your printed slip</li>
-                <li>• PC code will be auto-detected if required</li>
                 <li>• Your IP address will be logged for security</li>
                 <li>• Contest rules apply once logged in</li>
               </ul>

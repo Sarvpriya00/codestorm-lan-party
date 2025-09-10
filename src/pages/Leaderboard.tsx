@@ -353,7 +353,7 @@ export function Leaderboard() {
               )}
             </span>
             <span>•</span>
-            <span>CodeStorm 2024</span>
+            <span>CodeStorm 2025</span>
           </div>
         </CardContent>
       </Card>

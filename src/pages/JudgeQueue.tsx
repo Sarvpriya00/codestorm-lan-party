@@ -12,108 +12,67 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Clock, Code, FileText, Search, User, Trophy, Eye } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { RoleGuard } from "@/components/RoleGuard";
-import { PERMISSIONS } from "@/constants/permissions";
-
-// Mock data for submissions based on new schema
-const mockSubmissions = [
-  {
-    id: "sub_001",
-    problemId: "prob_001",
-    contestId: "contest_001",
-    submittedById: "user_001",
-    timestamp: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
-    status: "PENDING" as const,
-    reviewedById: null,
-    score: 0,
-    codeText: "def two_sum(nums, target):\n    for i in range(len(nums)):\n        for j in range(i+1, len(nums)):\n            if nums[i] + nums[j] == target:\n                return [i, j]\n    return []",
-    problem: {
-      id: "prob_001",
-      questionText: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
-      difficultyLevel: "EASY" as const,
-      tags: ["Array", "Hash Table"],
-      maxScore: 100
-    },
-    submittedBy: {
-      id: "user_001",
-      username: "participant_001",
-      displayName: "John Doe"
-    },
-    contest: {
-      id: "contest_001",
-      name: "CodeStorm 2024"
-    }
-  },
-  {
-    id: "sub_002", 
-    problemId: "prob_002",
-    contestId: "contest_001",
-    submittedById: "user_002",
-    timestamp: new Date(Date.now() - 4 * 60 * 1000), // 4 minutes ago
-    status: "PENDING" as const,
-    reviewedById: null,
-    score: 0,
-    codeText: "#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint binarySearch(vector<int>& arr, int target) {\n    int left = 0, right = arr.size() - 1;\n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        if (arr[mid] == target) return mid;\n        if (arr[mid] < target) left = mid + 1;\n        else right = mid - 1;\n    }\n    return -1;\n}",
-    problem: {
-      id: "prob_002",
-      questionText: "Implement binary search algorithm to find target element in sorted array.",
-      difficultyLevel: "MEDIUM" as const,
-      tags: ["Binary Search", "Array"],
-      maxScore: 150
-    },
-    submittedBy: {
-      id: "user_002",
-      username: "participant_002",
-      displayName: "Jane Smith"
-    },
-    contest: {
-      id: "contest_001",
-      name: "CodeStorm 2024"
-    }
-  },
-  {
-    id: "sub_003",
-    problemId: "prob_003",
-    contestId: "contest_001",
-    submittedById: "user_003",
-    timestamp: new Date(Date.now() - 6 * 60 * 1000), // 6 minutes ago
-    status: "UNDER_REVIEW" as const,
-    reviewedById: "judge_001",
-    score: 0,
-    codeText: "public class Solution {\n    public int fibonacci(int n) {\n        if (n <= 1) return n;\n        int[] dp = new int[n + 1];\n        dp[0] = 0;\n        dp[1] = 1;\n        for (int i = 2; i <= n; i++) {\n            dp[i] = dp[i-1] + dp[i-2];\n        }\n        return dp[n];\n    }\n}",
-    problem: {
-      id: "prob_003",
-      questionText: "Calculate the nth Fibonacci number using dynamic programming.",
-      difficultyLevel: "EASY" as const,
-      tags: ["Dynamic Programming", "Math"],
-      maxScore: 100
-    },
-    submittedBy: {
-      id: "user_003",
-      username: "participant_003",
-      displayName: "Bob Wilson"
-    },
-    contest: {
-      id: "contest_001",
-      name: "CodeStorm 2024"
-    }
-  }
-];
+import { apiClient } from "@/lib/api";
 
 type SubmissionStatus = "PENDING" | "UNDER_REVIEW" | "ACCEPTED" | "REJECTED";
 type Difficulty = "EASY" | "MEDIUM" | "HARD";
 
+interface Submission {
+  id: string;
+  problemId: string;
+  contestId: string;
+  submittedById: string;
+  timestamp: Date;
+  status: SubmissionStatus;
+  reviewedById: string | null;
+  score: number;
+  codeText: string;
+  problem: {
+    id: string;
+    questionText: string;
+    difficultyLevel: Difficulty;
+    tags: string[];
+    maxScore: number;
+  };
+  submittedBy: {
+    id: string;
+    username: string;
+    displayName: string;
+  };
+  contest: {
+    id: string;
+    name: string;
+  };
+}
+
 export function JudgeQueue() {
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedSubmission, setSelectedSubmission] = useState<typeof mockSubmissions[0] | null>(null);
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   
-  const { user } = useAuth();
+  const { user, hasPermission } = useAuth();
 
-  const filteredSubmissions = mockSubmissions.filter(submission => {
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        const response = await apiClient.get("/judge/queue");
+        setSubmissions(response as any);
+      } catch (error) {
+        console.error("Failed to fetch submissions:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSubmissions();
+  }, []);
+
+  const filteredSubmissions = submissions.filter(submission => {
     const matchesSearch = submission.problem.questionText.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          submission.submittedBy.username.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || submission.status === statusFilter;
@@ -122,14 +81,14 @@ export function JudgeQueue() {
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    const diffMs = now.getTime() - new Date(date).getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
     
     if (diffMins < 1) return "Just now";
     if (diffMins < 60) return `${diffMins} min ago`;
     const diffHours = Math.floor(diffMins / 60);
     if (diffHours < 24) return `${diffHours}h ago`;
-    return date.toLocaleDateString();
+    return new Date(date).toLocaleDateString();
   };
 
   const getStatusColor = (status: SubmissionStatus) => {
@@ -151,7 +110,7 @@ export function JudgeQueue() {
     }
   };
 
-  const handleReviewSubmission = (submission: typeof mockSubmissions[0]) => {
+  const handleReviewSubmission = (submission: Submission) => {
     setSelectedSubmission(submission);
     setIsReviewDialogOpen(true);
   };
@@ -160,6 +119,10 @@ export function JudgeQueue() {
     // In real app, this would call API to claim submission for review
     console.log('Claim submission:', submissionId);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -264,34 +227,36 @@ export function JudgeQueue() {
                 </div>
                 
                 <div className="flex gap-2">
-                  <RoleGuard requiredPermissions={[PERMISSIONS.VIEW_SUBMISSION]} showFallback={false}>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleReviewSubmission(submission)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Code
-                    </Button>
-                    {submission.status === 'PENDING' && (
+                  {hasPermission(310) && (
+                    <>
                       <Button 
-                        variant="default" 
-                        size="sm"
-                        onClick={() => handleClaimSubmission(submission.id)}
-                      >
-                        Claim & Review
-                      </Button>
-                    )}
-                    {submission.status === 'UNDER_REVIEW' && submission.reviewedById === user?.id && (
-                      <Button 
-                        variant="default" 
+                        variant="outline" 
                         size="sm"
                         onClick={() => handleReviewSubmission(submission)}
                       >
-                        Continue Review
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Code
                       </Button>
-                    )}
-                  </RoleGuard>
+                      {submission.status === 'PENDING' && (
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => handleClaimSubmission(submission.id)}
+                        >
+                          Claim & Review
+                        </Button>
+                      )}
+                      {submission.status === 'UNDER_REVIEW' && submission.reviewedById === user?.id && (
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => handleReviewSubmission(submission)}
+                        >
+                          Continue Review
+                        </Button>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             </CardContent>

@@ -31,6 +31,7 @@
     "@prisma/client": "^6.15.0",
     "bcryptjs": "^3.0.2",
     "commander": "^14.0.0",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "json2csv": "^6.0.0-alpha.2",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@types/commander": "^2.12.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/json2csv": "^5.0.7",
     "@types/jsonwebtoken": "^9.0.10",

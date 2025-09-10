@@ -1,3 +1,20 @@
+in the frontend folder change the year from 2024 to 2025,
+
+this is a local wide site which is gonna be interacted by multiple users 
+
+within frontend the broswerRouter routes should be not be static but fetched from the backend server which is in the backend
+and it should not fetch PERMISSIONS.X but to fetch the Participants.Permission arrays for views from backend
+in case the permission.tsx file which is in constant in frontend is present it should have only minimum permissions while more should be in the backend
+
+meaning what a user can see should be based on the login
+if i login into the site as a participant then from backend the participant related views and details should be shown
+if i am a judge then judge related and if i am an admin then admin related
+
+the role of the logined user can be determined by fetching from the database the username and fetch the role from db and have that value set as the view for the frontend for the user that is accessing the site.
+
+all of the list are within the permission.tsx
+which has following
+```
 // Permission codes based on the database schema design
 export const PERMISSIONS = {
   // Dashboard
@@ -159,3 +176,11 @@ export const NAVIGATION_ITEMS = {
     icon: 'Activity',
   },
 } as const;
+```
+
+other parts in the frontend whih are static and can be made into dynamic in the sense that the data can be fetched or requested from the backend server should be attached/connected
+alongside the database
+
+backend server should be fetching data from db as needed wherever possible and send it to frontend.
+
+wherever the elements/components are static or placeholders with hardcoded data and can be made into dynamic by fetching the data from backend server should be modified as such

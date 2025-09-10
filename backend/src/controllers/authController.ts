@@ -19,7 +19,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
       where: { username },
-      include: { role: true }, // Include the related Role model
+      include: { role: true },
     });
 
     if (!user) {
@@ -35,7 +35,7 @@ export const login = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       JWT_SECRET,
-      { expiresIn: '1h' } // Token expires in 1 hour
+      { expiresIn: '1h' }
     );
 
     res.status(200).json({ token, user: { id: user.id, username: user.username, role: user.role.name } });

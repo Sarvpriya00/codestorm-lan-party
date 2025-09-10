@@ -23,42 +23,9 @@ import {
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Edit, Trash2, Calendar, Clock, Users, FileText } from "lucide-react";
-import { RoleGuard } from "@/components/RoleGuard";
-import { PERMISSIONS } from "@/constants/permissions";
+import { useAuth } from "@/contexts/AuthContext";
 
-// Mock contest data
-const mockContests = [
-  {
-    id: "contest_001",
-    name: "CodeStorm 2024 Finals",
-    description: "Annual programming contest finals",
-    startTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-    endTime: new Date(Date.now() + 25 * 60 * 60 * 1000), // Tomorrow + 1 hour
-    status: "PLANNED" as const,
-    participants: 0,
-    problems: 8
-  },
-  {
-    id: "contest_002",
-    name: "Practice Round",
-    description: "Warm-up practice session",
-    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-    endTime: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour from now
-    status: "RUNNING" as const,
-    participants: 45,
-    problems: 5
-  },
-  {
-    id: "contest_003",
-    name: "Qualification Round",
-    description: "Initial qualification contest",
-    startTime: new Date(Date.now() - 48 * 60 * 60 * 1000), // 2 days ago
-    endTime: new Date(Date.now() - 46 * 60 * 60 * 1000), // 2 days ago + 2 hours
-    status: "ENDED" as const,
-    participants: 120,
-    problems: 6
-  }
-];
+
 
 type ContestStatus = "PLANNED" | "RUNNING" | "ENDED" | "ARCHIVED";
 
@@ -74,10 +41,27 @@ interface Contest {
 }
 
 export function ContestManagement() {
-  const [contests, setContests] = useState<Contest[]>(mockContests);
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedContest, setSelectedContest] = useState<Contest | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const { hasPermission } = useAuth();
+
+  useEffect(() => {
+    const fetchContests = async () => {
+      try {
+        const response = await apiClient.get("/contests");
+        setContests(response as any);
+      } catch (error) {
+        console.error("Failed to fetch contests:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchContests();
+  }, []);
 
   const getStatusColor = (status: ContestStatus) => {
     switch (status) {
@@ -125,7 +109,7 @@ export function ContestManagement() {
           </p>
         </div>
         
-        <RoleGuard requiredPermissions={[PERMISSIONS.CONTEST_CONTROL]} showFallback={false}>
+        {hasPermission(800) && (
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
               <Button>
@@ -143,7 +127,7 @@ export function ContestManagement() {
               <div className="grid gap-4 py-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Contest Name</Label>
-                  <Input id="name" placeholder="CodeStorm 2024" />
+                  <Input id="name" placeholder="CodeStorm 2025" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="description">Description</Label>
@@ -168,7 +152,7 @@ export function ContestManagement() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        </RoleGuard>
+        )}
       </div>
 
       {/* Contest Statistics */}
@@ -270,23 +254,25 @@ export function ContestManagement() {
                   <TableCell>{contest.problems}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <RoleGuard requiredPermissions={[PERMISSIONS.CONTEST_CONTROL]} showFallback={false}>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleEditContest(contest)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleDeleteContest(contest.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </RoleGuard>
+                      {hasPermission(800) && (
+                        <>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleEditContest(contest)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDeleteContest(contest.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

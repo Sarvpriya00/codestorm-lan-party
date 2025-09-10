@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,7 @@ import { Link } from "react-router-dom";
 import { DifficultyBadge, type Difficulty } from "@/components/DifficultyBadge";
 import { StatusBadge, type Status } from "@/components/StatusBadge";
 import { useAuth } from "@/contexts/AuthContext";
-import { RoleGuard } from "@/components/RoleGuard";
-import { PERMISSIONS } from "@/constants/permissions";
+import { apiClient } from "@/lib/api";
 
 // Updated interface based on QuestionProblem model
 interface QuestionProblem {
@@ -55,135 +54,28 @@ interface QuestionProblem {
 }
 
 export function Problems() {
+  const [problems, setProblems] = useState<QuestionProblem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDifficulty, setFilterDifficulty] = useState<"all" | "EASY" | "MEDIUM" | "HARD">("all");
   const [filterContest, setFilterContest] = useState<string>("all");
   
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
 
-  // Mock problems data based on QuestionProblem model
-  const problems: QuestionProblem[] = [
-    {
-      id: "prob_001",
-      questionText: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.",
-      difficultyLevel: "EASY",
-      tags: ["Array", "Hash Table"],
-      createdAt: new Date("2024-01-10"),
-      maxScore: 100,
-      isActive: true,
-      contestProblems: [
-        {
-          contestId: "contest_001",
-          order: 1,
-          points: 100,
-          contest: {
-            id: "contest_001",
-            name: "CodeStorm 2024 Finals",
-            status: "RUNNING"
-          }
-        }
-      ],
-      userStatus: "accepted",
-      userScore: 100,
-      submissionCount: 2
-    },
-    {
-      id: "prob_002",
-      questionText: "Implement binary search algorithm to find target element in sorted array. Return the index of target if found, otherwise return -1.",
-      difficultyLevel: "MEDIUM",
-      tags: ["Binary Search", "Array"],
-      createdAt: new Date("2024-01-11"),
-      maxScore: 150,
-      isActive: true,
-      contestProblems: [
-        {
-          contestId: "contest_001",
-          order: 2,
-          points: 150,
-          contest: {
-            id: "contest_001",
-            name: "CodeStorm 2024 Finals",
-            status: "RUNNING"
-          }
-        }
-      ],
-      userStatus: "pending",
-      userScore: 0,
-      submissionCount: 1
-    },
-    {
-      id: "prob_003",
-      questionText: "Calculate the nth Fibonacci number using dynamic programming approach. Optimize for both time and space complexity.",
-      difficultyLevel: "EASY",
-      tags: ["Dynamic Programming", "Math"],
-      createdAt: new Date("2024-01-12"),
-      maxScore: 100,
-      isActive: true,
-      contestProblems: [
-        {
-          contestId: "contest_001",
-          order: 3,
-          points: 100,
-          contest: {
-            id: "contest_001",
-            name: "CodeStorm 2024 Finals",
-            status: "RUNNING"
-          }
-        }
-      ],
-      userStatus: "not-started",
-      userScore: 0,
-      submissionCount: 0
-    },
-    {
-      id: "prob_004",
-      questionText: "Given a string containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. An input string is valid if brackets are closed in the correct order.",
-      difficultyLevel: "EASY",
-      tags: ["Stack", "String"],
-      createdAt: new Date("2024-01-13"),
-      maxScore: 100,
-      isActive: true,
-      contestProblems: [
-        {
-          contestId: "contest_002",
-          order: 1,
-          points: 100,
-          contest: {
-            id: "contest_002",
-            name: "Practice Round",
-            status: "RUNNING"
-          }
-        }
-      ],
-      userStatus: "rejected",
-      userScore: 0,
-      submissionCount: 3
-    },
-    {
-      id: "prob_005",
-      questionText: "Merge k sorted linked lists and return it as one sorted list. Analyze and describe its complexity.",
-      difficultyLevel: "HARD",
-      tags: ["Linked List", "Divide and Conquer", "Heap"],
-      createdAt: new Date("2024-01-14"),
-      maxScore: 250,
-      isActive: true,
-      contestProblems: [
-        {
-          contestId: "contest_001",
-          order: 8,
-          points: 250,
-          contest: {
-            id: "contest_001",
-            name: "CodeStorm 2024 Finals",
-            status: "RUNNING"
-          }
-        }
-      ],
-      userStatus: "not-started",
-      userScore: 0,
-      submissionCount: 0
-    }
-  ];
+  useEffect(() => {
+    const fetchProblems = async () => {
+      try {
+        const response = await apiClient.get("/problems");
+        setProblems(response as any);
+      } catch (error) {
+        console.error("Failed to fetch problems:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProblems();
+  }, []);
 
   // Get unique contests for filtering
   const contests = Array.from(
@@ -222,6 +114,10 @@ export function Problems() {
       default: return "text-muted-foreground";
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -352,7 +248,7 @@ export function Problems() {
                 </div>
                 
                 <div className="flex items-center gap-2">
-                  <RoleGuard requiredPermissions={[PERMISSIONS.VIEW_QUESTION]} showFallback={false}>
+                  {hasPermission(220) && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -364,7 +260,7 @@ export function Problems() {
                         Solve
                       </Link>
                     </Button>
-                  </RoleGuard>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"

@@ -31,37 +31,37 @@ export function BackupManager() {
   const mockBackups: BackupRecord[] = [
     {
       id: "backup1",
-      createdAt: new Date('2024-01-15T02:00:00'),
+      createdAt: new Date('2025-01-15T02:00:00'),
       createdById: "admin1",
       createdByName: "System Admin",
-      filePath: "/backups/backup_2024-01-15_02-00-00.sql",
+      filePath: "/backups/backup_2025-01-15_02-00-00.sql",
       status: "SUCCESS",
       fileSize: 15728640 // 15MB
     },
     {
       id: "backup2",
-      createdAt: new Date('2024-01-14T02:00:00'),
+      createdAt: new Date('2025-01-14T02:00:00'),
       createdById: "admin1",
       createdByName: "System Admin",
-      filePath: "/backups/backup_2024-01-14_02-00-00.sql",
+      filePath: "/backups/backup_2025-01-14_02-00-00.sql",
       status: "SUCCESS",
       fileSize: 14680064 // 14MB
     },
     {
       id: "backup3",
-      createdAt: new Date('2024-01-13T02:00:00'),
+      createdAt: new Date('2025-01-13T02:00:00'),
       createdById: "admin2",
       createdByName: "John Doe",
-      filePath: "/backups/backup_2024-01-13_02-00-00.sql",
+      filePath: "/backups/backup_2025-01-13_02-00-00.sql",
       status: "SUCCESS",
       fileSize: 13631488 // 13MB
     },
     {
       id: "backup4",
-      createdAt: new Date('2024-01-12T02:00:00'),
+      createdAt: new Date('2025-01-12T02:00:00'),
       createdById: "admin1",
       createdByName: "System Admin",
-      filePath: "/backups/backup_2024-01-12_02-00-00.sql",
+      filePath: "/backups/backup_2025-01-12_02-00-00.sql",
       status: "FAILED",
       fileSize: undefined
     }

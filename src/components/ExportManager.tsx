@@ -42,47 +42,47 @@ export function ExportManager() {
     {
       id: "export1",
       exportType: "submissions",
-      filePath: "/exports/submissions_2024-01-15.json",
-      fileName: "submissions_2024-01-15.json",
+      filePath: "/exports/submissions_2025-01-15.json",
+      fileName: "submissions_2025-01-15.json",
       status: "COMPLETED",
-      createdAt: new Date('2024-01-15T10:30:00'),
-      completedAt: new Date('2024-01-15T10:32:00'),
+      createdAt: new Date('2025-01-15T10:30:00'),
+      completedAt: new Date('2025-01-15T10:32:00'),
       fileSize: 2048576,
       downloadUrl: "/api/exports/export1/download"
     },
     {
       id: "export2",
       exportType: "users",
-      filePath: "/exports/users_2024-01-14.csv",
-      fileName: "users_2024-01-14.csv",
+      filePath: "/exports/users_2025-01-14.csv",
+      fileName: "users_2025-01-14.csv",
       status: "COMPLETED",
-      createdAt: new Date('2024-01-14T15:20:00'),
-      completedAt: new Date('2024-01-14T15:21:00'),
+      createdAt: new Date('2025-01-14T15:20:00'),
+      completedAt: new Date('2025-01-14T15:21:00'),
       fileSize: 512000,
       downloadUrl: "/api/exports/export2/download"
     },
     {
       id: "export3",
       exportType: "analytics",
-      filePath: "/exports/analytics_2024-01-13.xlsx",
-      fileName: "analytics_2024-01-13.xlsx",
+      filePath: "/exports/analytics_2025-01-13.xlsx",
+      fileName: "analytics_2025-01-13.xlsx",
       status: "PENDING",
-      createdAt: new Date('2024-01-13T09:15:00'),
+      createdAt: new Date('2025-01-13T09:15:00'),
       fileSize: undefined
     },
     {
       id: "export4",
       exportType: "full",
-      filePath: "/exports/full_backup_2024-01-12.json",
-      fileName: "full_backup_2024-01-12.json",
+      filePath: "/exports/full_backup_2025-01-12.json",
+      fileName: "full_backup_2025-01-12.json",
       status: "FAILED",
-      createdAt: new Date('2024-01-12T08:00:00'),
+      createdAt: new Date('2025-01-12T08:00:00'),
       fileSize: undefined
     }
   ];
 
   const mockContests = [
-    { id: "contest1", name: "Spring Programming Contest 2024", status: "RUNNING" },
+    { id: "contest1", name: "Spring Programming Contest 2025", status: "RUNNING" },
     { id: "contest2", name: "Algorithm Challenge", status: "ENDED" },
     { id: "contest3", name: "Data Structures Marathon", status: "PLANNED" }
   ];

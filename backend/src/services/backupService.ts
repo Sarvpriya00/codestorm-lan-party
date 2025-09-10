@@ -351,7 +351,6 @@ export class BackupService {
           username: true,
           displayName: true,
           roleId: true,
-          pcCode: true,
           lastActive: true,
           scored: true,
           problemsSolvedCount: true
@@ -402,7 +401,6 @@ export class BackupService {
         username: true,
         displayName: true,
         role: { select: { name: true } },
-        pcCode: true,
         lastActive: true,
         scored: true,
         problemsSolvedCount: true

@@ -54,7 +54,7 @@ model User {
   displayName           String?
   password              String
   roleId                String
-  pcCode                String?
+  
   ipAddress             String?
   lastActive            DateTime?
   scored                Float       @default(0)
@@ -323,7 +323,6 @@ model ScoreEvent {
 
 model Seat {
   id            String @id @default(uuid())
-  pc_access_code String @unique
   ip_address    String
   userId        String @unique
   user          User   @relation(fields: [userId], references: [id])

@@ -23,7 +23,7 @@ export function ContestDashboard({ contestId }: ContestDashboardProps) {
   // Mock contest data
   const contestData = {
     id: "contest_001",
-    name: "CodeStorm 2024 Finals",
+    name: "CodeStorm 2025 Finals",
     description: "Annual programming contest finals",
     startTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // Started 2 hours ago
     endTime: new Date(Date.now() + 1 * 60 * 60 * 1000), // Ends in 1 hour

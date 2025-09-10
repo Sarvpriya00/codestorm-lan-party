@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { NAVIGATION_ITEMS } from "@/constants/permissions";
+import { useState, useEffect } from "react";
+import { apiClient as api } from "@/lib/api";
 
 import {
   Sidebar,
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/sidebar";
 
 // Icon mapping
-const iconMap = {
+const iconMap: { [key: string]: React.ComponentType<{ className: string }> } = {
   Home,
   FileText,
   Send,
@@ -44,23 +45,34 @@ const iconMap = {
   Activity,
 };
 
-// Convert navigation items to array with icon components
-const navigationItems = Object.values(NAVIGATION_ITEMS).map(item => ({
-  ...item,
-  icon: iconMap[item.icon as keyof typeof iconMap] || Home,
-}));
+interface NavItem {
+  path: string;
+  title: string;
+  icon: string;
+}
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const { hasAnyPermission, user } = useAuth();
+  const { user } = useAuth();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+  const [navItems, setNavItems] = useState<NavItem[]>([]);
 
-  // Filter navigation items based on user permissions
-  const visibleItems = navigationItems.filter(item => 
-    hasAnyPermission([...item.permissions])
-  );
+  useEffect(() => {
+    const fetchNavItems = async () => {
+      try {
+        const response = await api.get("/dynamic/user/routes-and-permissions");
+        setNavItems(response.data.dynamicRoutes);
+      } catch (error) {
+        console.error("Failed to fetch navigation items:", error);
+      }
+    };
+
+    if (user) {
+      fetchNavItems();
+    }
+  }, [user]);
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
@@ -84,20 +96,23 @@ export function AppSidebar() {
           
           <SidebarGroupContent>
             <SidebarMenu>
-              {visibleItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      end={item.url === "/"} 
-                      className={getNavCls(item.url)}
-                    >
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navItems.map((item) => {
+                const Icon = iconMap[item.icon] || Home;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink 
+                        to={item.path} 
+                        end={item.path === "/"} 
+                        className={getNavCls(item.path)}
+                      >
+                        <Icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

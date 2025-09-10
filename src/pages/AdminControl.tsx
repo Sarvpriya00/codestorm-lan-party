@@ -14,33 +14,48 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Play, Pause, Square, Clock, Settings, AlertTriangle, Eye, EyeOff, Shield, Users, FileText, Calendar, Server } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { RoleGuard } from "@/components/RoleGuard";
-import { PERMISSIONS } from "@/constants/permissions";
 import { ContestManagement } from "@/components/ContestManagement";
 import { SystemControl } from "@/components/SystemControl";
+import { apiClient } from "@/lib/api";
+
+interface Contest {
+  id: string;
+  name: string;
+  description: string;
+  startTime: Date;
+  endTime: Date;
+  status: string;
+  participants: number;
+  problems: number;
+  totalSubmissions: number;
+}
 
 export function AdminControl() {
+  const [contest, setContest] = useState<Contest | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [contestPhase, setContestPhase] = useState("RUNNING");
   const [showPendingPoints, setShowPendingPoints] = useState(true);
   const [emergencyPause, setEmergencyPause] = useState(false);
   const [isEmergencyDialogOpen, setIsEmergencyDialogOpen] = useState(false);
   
   const { hasPermission } = useAuth();
-  
-  // Mock contest data - in real app this would come from API
-  const contestData = {
-    id: "contest_001",
-    name: "CodeStorm 2024 Finals",
-    description: "Annual programming contest",
-    startTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // Started 2 hours ago
-    endTime: new Date(Date.now() + 1 * 60 * 60 * 1000), // Ends in 1 hour
-    status: contestPhase,
-    participants: 45,
-    problems: 8,
-    totalSubmissions: 127
-  };
+
+  useEffect(() => {
+    const fetchActiveContest = async () => {
+      try {
+        const response = await apiClient.get("/contests/active");
+        setContest((response as any)[0]);
+      } catch (error) {
+        console.error("Failed to fetch active contest:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchActiveContest();
+  }, []);
   
   const timeProgress = 65; // 65% of contest time elapsed
   const timeRemaining = "21:15";
@@ -74,6 +89,14 @@ export function AdminControl() {
     setIsEmergencyDialogOpen(false);
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!contest) {
+    return <div>No active contest found.</div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -91,7 +114,7 @@ export function AdminControl() {
             {phases.find(p => p.key === contestPhase)?.label || contestPhase} Phase
           </Badge>
           <div className="text-sm text-muted-foreground">
-            {contestData.name}
+            {contest.name}
           </div>
         </div>
       </div>
@@ -121,7 +144,7 @@ export function AdminControl() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Participants</p>
-                <p className="text-2xl font-bold">{contestData.participants}</p>
+                <p className="text-2xl font-bold">{contest.participants}</p>
               </div>
               <Users className="h-8 w-8 text-primary opacity-60" />
             </div>
@@ -133,7 +156,7 @@ export function AdminControl() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Problems</p>
-                <p className="text-2xl font-bold">{contestData.problems}</p>
+                <p className="text-2xl font-bold">{contest.problems}</p>
               </div>
               <FileText className="h-8 w-8 text-primary opacity-60" />
             </div>
@@ -145,7 +168,7 @@ export function AdminControl() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Submissions</p>
-                <p className="text-2xl font-bold">{contestData.totalSubmissions}</p>
+                <p className="text-2xl font-bold">{contest.totalSubmissions}</p>
               </div>
               <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center">
                 <span className="text-sm font-bold">S</span>
@@ -183,15 +206,15 @@ export function AdminControl() {
             </div>
             <Progress value={timeProgress} className="h-3" />
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Started: {contestData.startTime.toLocaleTimeString()}</span>
-              <span>End: {contestData.endTime.toLocaleTimeString()}</span>
+              <span>Started: {new Date(contest.startTime).toLocaleTimeString()}</span>
+              <span>End: {new Date(contest.endTime).toLocaleTimeString()}</span>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Phase Control */}
-      <RoleGuard requiredPermissions={[PERMISSIONS.PHASE_CONTROL]}>
+      {hasPermission(820) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -231,10 +254,10 @@ export function AdminControl() {
             </div>
           </CardContent>
         </Card>
-      </RoleGuard>
+      )}
 
       {/* Contest Settings */}
-      <RoleGuard requiredPermissions={[PERMISSIONS.DISPLAY_CONTROL]}>
+      {hasPermission(830) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -270,10 +293,10 @@ export function AdminControl() {
             </div>
           </CardContent>
         </Card>
-      </RoleGuard>
+      )}
 
       {/* Emergency Actions */}
-      <RoleGuard requiredPermissions={[PERMISSIONS.EMERGENCY_ACTIONS]}>
+      {hasPermission(840) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -358,7 +381,7 @@ export function AdminControl() {
             </div>
           </CardContent>
         </Card>
-      </RoleGuard>
+      )}
         </TabsContent>
 
         <TabsContent value="contest-management">

@@ -2,6 +2,7 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import * as http from 'http';
 import * as WebSocket from 'ws';
+import cors from 'cors'; // Import cors
 import authRouter from './routes/auth';
 import problemRouter from './routes/problem';
 import submissionRouter from './routes/submission';
@@ -12,6 +13,8 @@ import contestRouter from './routes/contest';
 import analyticsRouter from './routes/analytics';
 import leaderboardRouter from './routes/leaderboard';
 import attendanceRouter from './routes/attendance';
+import userRouter from './routes/user';
+import dynamicRouter from './routes/dynamic';
 import { initWebSocket } from './services/websocketService';
 import { auditLogMiddleware } from './middleware/auditMiddleware'; // Import audit middleware
 import { analyticsJobService } from './services/analyticsJobService';
@@ -22,6 +25,9 @@ const prisma = new PrismaClient();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+
+// Enable CORS for frontend
+app.use(cors({ origin: 'http://localhost:8080' }));
 
 // Use audit log middleware globally
 app.use(auditLogMiddleware);
@@ -52,6 +58,12 @@ app.use('/api', leaderboardRouter);
 
 // Use attendance router
 app.use('/api/attendance', attendanceRouter);
+
+// Use user router
+app.use('/api/user', userRouter);
+
+// Use dynamic router
+app.use('/api/dynamic', dynamicRouter);
 
 // Use public router
 app.use('/api', publicRouter); // Use public router for /api routes

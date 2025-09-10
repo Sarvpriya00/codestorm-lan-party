@@ -17,64 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Users, Download, Upload, Search, UserPlus, Settings, Edit, Trash2, Shield } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { RoleGuard } from "@/components/RoleGuard";
-import { PERMISSIONS } from "@/constants/permissions";
 
-// Mock user data - in real app this would come from API
-const mockUsers = [
-  {
-    id: "user_001",
-    username: "participant_001",
-    displayName: "John Doe",
-    role: { id: "role_1", name: "participant", description: "Contest Participant" },
-    pcCode: "PC-A1",
-    ipAddress: "192.168.1.101",
-    lastActive: new Date(Date.now() - 2 * 60 * 1000),
-    scored: 150,
-    problemsSolvedCount: 2,
-    submissions: 5,
-    accepted: 2
-  },
-  {
-    id: "user_002", 
-    username: "participant_002",
-    displayName: "Jane Smith",
-    role: { id: "role_1", name: "participant", description: "Contest Participant" },
-    pcCode: "PC-A2",
-    ipAddress: "192.168.1.102", 
-    lastActive: new Date(Date.now() - 5 * 60 * 1000),
-    scored: 75,
-    problemsSolvedCount: 1,
-    submissions: 3,
-    accepted: 1
-  },
-  {
-    id: "user_003",
-    username: "judge_001",
-    displayName: "Judge Wilson",
-    role: { id: "role_2", name: "judge", description: "Contest Judge" },
-    pcCode: "PC-J1",
-    ipAddress: "192.168.1.110",
-    lastActive: new Date(Date.now() - 1 * 60 * 1000),
-    scored: 0,
-    problemsSolvedCount: 0,
-    submissions: 0,
-    accepted: 0
-  },
-  {
-    id: "user_004",
-    username: "admin_001",
-    displayName: "Administrator",
-    role: { id: "role_3", name: "admin", description: "System Administrator" },
-    pcCode: "PC-ADMIN",
-    ipAddress: "192.168.1.100",
-    lastActive: new Date(),
-    scored: 0,
-    problemsSolvedCount: 0,
-    submissions: 0,
-    accepted: 0
-  }
-];
+
 
 const availableRoles = [
   { id: "role_1", name: "participant", description: "Contest Participant" },
@@ -83,13 +27,30 @@ const availableRoles = [
 ];
 
 export function AdminUsers() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const [selectedUser, setSelectedUser] = useState<typeof mockUsers[0] | null>(null);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
   const { hasPermission } = useAuth();
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await apiClient.get("/user/users");
+        setUsers(response as any);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const filteredUsers = mockUsers.filter(user => {
     const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,17 +104,19 @@ export function AdminUsers() {
         </div>
         
         <div className="flex gap-2">
-          <RoleGuard requiredPermissions={[PERMISSIONS.EXPORTS]} showFallback={false}>
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              Import CSV
-            </Button>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-          </RoleGuard>
-          <RoleGuard requiredPermissions={[PERMISSIONS.USER_CONTROL]} showFallback={false}>
+          {hasPermission(700) && (
+            <>
+              <Button variant="outline" size="sm">
+                <Upload className="h-4 w-4 mr-2" />
+                Import CSV
+              </Button>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+            </>
+          )}
+          {hasPermission(860) && (
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="hero" size="sm">
@@ -210,7 +173,7 @@ export function AdminUsers() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          </RoleGuard>
+          )}
         </div>
       </div>
 
@@ -348,23 +311,25 @@ export function AdminUsers() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <RoleGuard requiredPermissions={[PERMISSIONS.USER_CONTROL]} showFallback={false}>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </RoleGuard>
+                      {hasPermission(860) && (
+                        <>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleEditUser(user)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleDeleteUser(user.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                       <Button variant="ghost" size="sm">
                         <Shield className="h-4 w-4" />
                       </Button>
