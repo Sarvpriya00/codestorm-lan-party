@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export const getMe = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user.userId;
+    const userId = (req as any).userId;
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { role: true },

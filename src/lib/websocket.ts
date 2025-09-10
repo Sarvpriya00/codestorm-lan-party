@@ -30,13 +30,25 @@ class WebSocketService {
     return new Promise((resolve, reject) => {
       try {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}`;
+        // Use environment variable or default to localhost:3001 for backend
+        const backendHost = import.meta.env.VITE_BACKEND_HOST || 'localhost:3001';
+        const wsUrl = `${protocol}//${backendHost}`;
         
+        console.log('Connecting to WebSocket:', wsUrl);
         this.ws = new WebSocket(wsUrl);
         this.userId = userId || null;
 
+        // Set connection timeout
+        const connectionTimeout = setTimeout(() => {
+          if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+            this.ws.close();
+            reject(new Error('WebSocket connection timeout'));
+          }
+        }, 10000); // 10 second timeout
+
         this.ws.onopen = () => {
-          console.log('WebSocket connected');
+          clearTimeout(connectionTimeout);
+          console.log('WebSocket connected to:', wsUrl);
           this.reconnectAttempts = 0;
           this.options.onConnect?.();
           
@@ -57,17 +69,23 @@ class WebSocketService {
           }
         };
 
-        this.ws.onclose = () => {
-          console.log('WebSocket disconnected');
+        this.ws.onclose = (event) => {
+          clearTimeout(connectionTimeout);
+          console.log('WebSocket disconnected. Code:', event.code, 'Reason:', event.reason);
           this.isAuthenticated = false;
           this.options.onDisconnect?.();
-          this.attemptReconnect();
+          
+          // Only attempt reconnect if it wasn't a clean close
+          if (event.code !== 1000) {
+            this.attemptReconnect();
+          }
         };
 
         this.ws.onerror = (error) => {
+          clearTimeout(connectionTimeout);
           console.error('WebSocket error:', error);
           this.options.onError?.(error);
-          reject(error);
+          reject(new Error('WebSocket connection failed'));
         };
       } catch (error) {
         reject(error);
@@ -98,13 +116,23 @@ class WebSocketService {
   private attemptReconnect() {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+      // Exponential backoff: 1s, 2s, 4s, 8s, 16s
+      const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+      console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms...`);
       
-      setTimeout(() => {
-        this.connect(this.userId || undefined);
-      }, this.reconnectDelay * this.reconnectAttempts);
+      setTimeout(async () => {
+        try {
+          await this.connect(this.userId || undefined);
+          console.log('WebSocket reconnected successfully');
+        } catch (error) {
+          console.error('Reconnection attempt failed:', error);
+          // The connect method will trigger another reconnect attempt on failure
+        }
+      }, delay);
     } else {
-      console.error('Max reconnection attempts reached');
+      console.error('Max reconnection attempts reached. WebSocket connection failed permanently.');
+      // Notify about permanent connection failure
+      this.options.onError?.(new Event('max_reconnect_attempts_reached') as any);
     }
   }
 
@@ -129,9 +157,18 @@ class WebSocketService {
     }
   }
 
-  private send(type: string, payload: any) {
+  private send(type: string, payload: any): boolean {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({ type, payload }));
+      try {
+        this.ws.send(JSON.stringify({ type, payload, timestamp: new Date().toISOString() }));
+        return true;
+      } catch (error) {
+        console.error('Error sending WebSocket message:', error);
+        return false;
+      }
+    } else {
+      console.warn(`Cannot send message '${type}': WebSocket not connected (state: ${this.ws?.readyState})`);
+      return false;
     }
   }
 
@@ -182,6 +219,50 @@ class WebSocketService {
     this.on('attendance_update', handler);
   }
 
+  // Login method for WebSocket authentication
+  login(username: string, password: string): Promise<{ token: string; user: any; permissions: number[] }> {
+    return new Promise((resolve, reject) => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        reject(new Error('WebSocket not connected'));
+        return;
+      }
+
+      // Set up one-time listeners for login response with timeout
+      const loginTimeout = setTimeout(() => {
+        this.off('login_success', handleLoginSuccess);
+        this.off('login_error', handleLoginError);
+        reject(new Error('Login request timeout'));
+      }, 15000); // 15 second timeout
+
+      const handleLoginSuccess = (payload: any) => {
+        clearTimeout(loginTimeout);
+        this.off('login_success', handleLoginSuccess);
+        this.off('login_error', handleLoginError);
+        resolve(payload);
+      };
+
+      const handleLoginError = (payload: any) => {
+        clearTimeout(loginTimeout);
+        this.off('login_success', handleLoginSuccess);
+        this.off('login_error', handleLoginError);
+        reject(new Error(payload.message || 'Login failed'));
+      };
+
+      this.on('login_success', handleLoginSuccess);
+      this.on('login_error', handleLoginError);
+
+      // Send login request
+      this.send('login', { username, password });
+    });
+  }
+
+  // Manual retry connection method
+  retryConnection(): Promise<void> {
+    console.log('Manual connection retry requested');
+    this.reconnectAttempts = 0; // Reset attempts for manual retry
+    return this.connect(this.userId || undefined);
+  }
+
   disconnect() {
     if (this.ws) {
       this.ws.close();
@@ -203,6 +284,27 @@ class WebSocketService {
 
   getCurrentContestId(): string | null {
     return this.contestId;
+  }
+
+  getConnectionState(): string {
+    if (!this.ws) return 'DISCONNECTED';
+    
+    switch (this.ws.readyState) {
+      case WebSocket.CONNECTING:
+        return 'CONNECTING';
+      case WebSocket.OPEN:
+        return 'CONNECTED';
+      case WebSocket.CLOSING:
+        return 'CLOSING';
+      case WebSocket.CLOSED:
+        return 'CLOSED';
+      default:
+        return 'UNKNOWN';
+    }
+  }
+
+  getReconnectAttempts(): number {
+    return this.reconnectAttempts;
   }
 }
 

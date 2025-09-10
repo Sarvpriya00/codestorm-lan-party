@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -24,38 +24,47 @@ class ApiClient {
     return response.json();
   }
 
+  private async makeRequest<T>(url: string, options: RequestInit): Promise<T> {
+    try {
+      const response = await fetch(url, options);
+      return this.handleResponse<T>(response);
+    } catch (error) {
+      // Handle CORS and network errors specifically
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error('CORS error: Unable to connect to backend. Please check if the backend server is running and CORS is properly configured.');
+      }
+      throw error;
+    }
+  }
+
   async get<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    return this.makeRequest<T>(`${API_BASE_URL}${endpoint}`, {
       method: 'GET',
       headers: this.getAuthHeaders(),
     });
-    return this.handleResponse<T>(response);
   }
 
   async post<T>(endpoint: string, data?: any): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    return this.makeRequest<T>(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: data ? JSON.stringify(data) : undefined,
     });
-    return this.handleResponse<T>(response);
   }
 
   async put<T>(endpoint: string, data?: any): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    return this.makeRequest<T>(`${API_BASE_URL}${endpoint}`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: data ? JSON.stringify(data) : undefined,
     });
-    return this.handleResponse<T>(response);
   }
 
   async delete<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    return this.makeRequest<T>(`${API_BASE_URL}${endpoint}`, {
       method: 'DELETE',
       headers: this.getAuthHeaders(),
     });
-    return this.handleResponse<T>(response);
   }
 }
 

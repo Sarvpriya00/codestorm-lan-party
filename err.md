@@ -1,475 +1,185 @@
 i am using 
 name admin
 pass admin123
-it is saying 
-cannot destructure property of tokein in response.data
-{
-  "log": {
-    "version": "1.2",
-    "creator": {
-      "name": "WebInspector",
-      "version": "537.36"
-    },
-    "pages": [
-      {
-        "startedDateTime": "2025-09-10T09:58:18.445Z",
-        "id": "page_14",
-        "title": "http://localhost:8080/login",
-        "pageTimings": {
-          "onContentLoad": 296.78699997020885,
-          "onLoad": 418.1240000179969
-        }
-      }
-    ],
-    "entries": [
-      {
-        "_connectionId": "291401",
-        "_initiator": {
-          "type": "script",
-          "stack": {
-            "callFrames": [
-              {
-                "functionName": "post",
-                "scriptId": "1870",
-                "url": "http://localhost:8080/src/lib/api.ts",
-                "lineNumber": 28,
-                "columnNumber": 31
-              },
-              {
-                "functionName": "login",
-                "scriptId": "1861",
-                "url": "http://localhost:8080/src/contexts/AuthContext.tsx",
-                "lineNumber": 67,
-                "columnNumber": 39
-              },
-              {
-                "functionName": "handleSubmit",
-                "scriptId": "1864",
-                "url": "http://localhost:8080/src/pages/Login.tsx",
-                "lineNumber": 52,
-                "columnNumber": 18
-              },
-              {
-                "functionName": "callCallback2",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 3673,
-                "columnNumber": 21
-              },
-              {
-                "functionName": "invokeGuardedCallbackDev",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 3698,
-                "columnNumber": 23
-              },
-              {
-                "functionName": "invokeGuardedCallback",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 3732,
-                "columnNumber": 38
-              },
-              {
-                "functionName": "invokeGuardedCallbackAndCatchFirstError",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 3735,
-                "columnNumber": 32
-              },
-              {
-                "functionName": "executeDispatch",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 7013,
-                "columnNumber": 10
-              },
-              {
-                "functionName": "processDispatchQueueItemsInOrder",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 7033,
-                "columnNumber": 14
-              },
-              {
-                "functionName": "processDispatchQueue",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 7042,
-                "columnNumber": 12
-              },
-              {
-                "functionName": "dispatchEventsForPlugins",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 7050,
-                "columnNumber": 10
-              },
-              {
-                "functionName": "",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 7173,
-                "columnNumber": 19
-              },
-              {
-                "functionName": "batchedUpdates$1",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 18912,
-                "columnNumber": 19
-              },
-              {
-                "functionName": "batchedUpdates",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 3578,
-                "columnNumber": 19
-              },
-              {
-                "functionName": "dispatchEventForPluginEventSystem",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 7172,
-                "columnNumber": 10
-              },
-              {
-                "functionName": "dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 5477,
-                "columnNumber": 12
-              },
-              {
-                "functionName": "dispatchEvent",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 5471,
-                "columnNumber": 12
-              },
-              {
-                "functionName": "dispatchDiscreteEvent",
-                "scriptId": "1851",
-                "url": "http://localhost:8080/node_modules/.vite/deps/chunk-R6S4VRB5.js?v=35642593",
-                "lineNumber": 5448,
-                "columnNumber": 12
-              }
-            ]
-          }
-        },
-        "_priority": "High",
-        "_resourceType": "fetch",
-        "cache": {},
-        "connection": "3001",
-        "pageref": "page_14",
-        "request": {
-          "method": "POST",
-          "url": "http://localhost:3001/api/auth/login",
-          "httpVersion": "HTTP/1.1",
-          "headers": [
-            {
-              "name": "Accept",
-              "value": "*/*"
-            },
-            {
-              "name": "Accept-Encoding",
-              "value": "gzip, deflate, br, zstd"
-            },
-            {
-              "name": "Accept-Language",
-              "value": "en-GB,en-US;q=0.9,en;q=0.8"
-            },
-            {
-              "name": "Connection",
-              "value": "keep-alive"
-            },
-            {
-              "name": "Content-Length",
-              "value": "42"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "DNT",
-              "value": "1"
-            },
-            {
-              "name": "Host",
-              "value": "localhost:3001"
-            },
-            {
-              "name": "Origin",
-              "value": "http://localhost:8080"
-            },
-            {
-              "name": "Referer",
-              "value": "http://localhost:8080/"
-            },
-            {
-              "name": "Sec-Fetch-Dest",
-              "value": "empty"
-            },
-            {
-              "name": "Sec-Fetch-Mode",
-              "value": "cors"
-            },
-            {
-              "name": "Sec-Fetch-Site",
-              "value": "same-site"
-            },
-            {
-              "name": "User-Agent",
-              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
-            },
-            {
-              "name": "sec-ch-ua",
-              "value": "\"Not=A?Brand\";v=\"24\", \"Chromium\";v=\"140\""
-            },
-            {
-              "name": "sec-ch-ua-mobile",
-              "value": "?0"
-            },
-            {
-              "name": "sec-ch-ua-platform",
-              "value": "\"macOS\""
-            }
-          ],
-          "queryString": [],
-          "cookies": [],
-          "headersSize": 608,
-          "bodySize": 42,
-          "postData": {
-            "mimeType": "application/json",
-            "text": "{\"username\":\"admin\",\"password\":\"admin123\"}"
-          }
-        },
-        "response": {
-          "status": 200,
-          "statusText": "OK",
-          "httpVersion": "HTTP/1.1",
-          "headers": [
-            {
-              "name": "Access-Control-Allow-Origin",
-              "value": "http://localhost:8080"
-            },
-            {
-              "name": "Connection",
-              "value": "keep-alive"
-            },
-            {
-              "name": "Content-Length",
-              "value": "430"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json; charset=utf-8"
-            },
-            {
-              "name": "Date",
-              "value": "Wed, 10 Sep 2025 09:58:32 GMT"
-            },
-            {
-              "name": "ETag",
-              "value": "W/\"1ae-dnm96uH+wkPKByScjzQ0iVb5WBA\""
-            },
-            {
-              "name": "Keep-Alive",
-              "value": "timeout=5"
-            },
-            {
-              "name": "Vary",
-              "value": "Origin"
-            },
-            {
-              "name": "X-Powered-By",
-              "value": "Express"
-            }
-          ],
-          "cookies": [],
-          "content": {
-            "size": 430,
-            "mimeType": "application/json",
-            "compression": 0,
-            "text": "{\"token\":\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxNDA4OGMxNC0wZmRkLTQ1MjktYmQ3Ny0zODU3NjM0YjdhNmUiLCJyb2xlIjp7ImlkIjoiYWRtaW4tcm9sZS1pZCIsIm5hbWUiOiJBRE1JTiIsImRlc2NyaXB0aW9uIjoiQWRtaW5pc3RyYXRvciByb2xlIHdpdGggZnVsbCBzeXN0ZW0gYWNjZXNzIn0sImlhdCI6MTc1NzQ5ODMxMiwiZXhwIjoxNzU3NTAxOTEyfQ.W3U7BkM5ZPRVa5PvXXhmggvYT9iYuXwl_yc0Z9LzkQs\",\"user\":{\"id\":\"14088c14-0fdd-4529-bd77-3857634b7a6e\",\"username\":\"admin\",\"role\":\"ADMIN\"}}"
-          },
-          "redirectURL": "",
-          "headersSize": 303,
-          "bodySize": 430,
-          "_transferSize": 733,
-          "_error": null,
-          "_fetchedViaServiceWorker": false
-        },
-        "serverIPAddress": "[::1]",
-        "startedDateTime": "2025-09-10T09:58:32.149Z",
-        "time": 134.92400001268834,
-        "timings": {
-          "blocked": 4.025000005356968,
-          "dns": -1,
-          "ssl": -1,
-          "connect": -1,
-          "send": 0.10399999999999998,
-          "wait": 130.5099999908842,
-          "receive": 0.28500001644715667,
-          "_blocked_queueing": 3.7770000053569674,
-          "_workerStart": -1,
-          "_workerReady": -1,
-          "_workerFetchStart": -1,
-          "_workerRespondWithSettled": -1
-        }
-      },
-      {
-        "_connectionId": "291401",
-        "_initiator": {
-          "type": "preflight",
-          "url": "http://localhost:3001/api/auth/login",
-          "requestId": "17758.3659"
-        },
-        "_priority": "High",
-        "_resourceType": "preflight",
-        "cache": {},
-        "connection": "3001",
-        "pageref": "page_14",
-        "request": {
-          "method": "OPTIONS",
-          "url": "http://localhost:3001/api/auth/login",
-          "httpVersion": "HTTP/1.1",
-          "headers": [
-            {
-              "name": "Accept",
-              "value": "*/*"
-            },
-            {
-              "name": "Accept-Encoding",
-              "value": "gzip, deflate, br, zstd"
-            },
-            {
-              "name": "Accept-Language",
-              "value": "en-GB,en-US;q=0.9,en;q=0.8"
-            },
-            {
-              "name": "Access-Control-Request-Headers",
-              "value": "content-type"
-            },
-            {
-              "name": "Access-Control-Request-Method",
-              "value": "POST"
-            },
-            {
-              "name": "Connection",
-              "value": "keep-alive"
-            },
-            {
-              "name": "Host",
-              "value": "localhost:3001"
-            },
-            {
-              "name": "Origin",
-              "value": "http://localhost:8080"
-            },
-            {
-              "name": "Referer",
-              "value": "http://localhost:8080/"
-            },
-            {
-              "name": "Sec-Fetch-Dest",
-              "value": "empty"
-            },
-            {
-              "name": "Sec-Fetch-Mode",
-              "value": "cors"
-            },
-            {
-              "name": "Sec-Fetch-Site",
-              "value": "same-site"
-            },
-            {
-              "name": "User-Agent",
-              "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
-            }
-          ],
-          "queryString": [],
-          "cookies": [],
-          "headersSize": 530,
-          "bodySize": 0
-        },
-        "response": {
-          "status": 204,
-          "statusText": "No Content",
-          "httpVersion": "HTTP/1.1",
-          "headers": [
-            {
-              "name": "Access-Control-Allow-Headers",
-              "value": "content-type"
-            },
-            {
-              "name": "Access-Control-Allow-Methods",
-              "value": "GET,HEAD,PUT,PATCH,POST,DELETE"
-            },
-            {
-              "name": "Access-Control-Allow-Origin",
-              "value": "http://localhost:8080"
-            },
-            {
-              "name": "Connection",
-              "value": "keep-alive"
-            },
-            {
-              "name": "Content-Length",
-              "value": "0"
-            },
-            {
-              "name": "Date",
-              "value": "Wed, 10 Sep 2025 09:58:32 GMT"
-            },
-            {
-              "name": "Keep-Alive",
-              "value": "timeout=5"
-            },
-            {
-              "name": "Vary",
-              "value": "Origin, Access-Control-Request-Headers"
-            },
-            {
-              "name": "X-Powered-By",
-              "value": "Express"
-            }
-          ],
-          "cookies": [],
-          "content": {
-            "size": 0,
-            "mimeType": "x-unknown",
-            "compression": 357
-          },
-          "redirectURL": "",
-          "headersSize": 357,
-          "bodySize": -357,
-          "_transferSize": 0,
-          "_error": null,
-          "_fetchedViaServiceWorker": false
-        },
-        "serverIPAddress": "[::1]",
-        "startedDateTime": "2025-09-10T09:58:32.149Z",
-        "time": 2.925999998994172,
-        "timings": {
-          "blocked": 0.17000000102072954,
-          "dns": 0.006000000000000005,
-          "ssl": -1,
-          "connect": 0.361,
-          "send": 0.479,
-          "wait": 1.354000013474375,
-          "receive": 0.5559999844990671,
-          "_blocked_queueing": 0.04600000102072954,
-          "_workerStart": -1,
-          "_workerReady": -1,
-          "_workerFetchStart": -1,
-          "_workerRespondWithSettled": -1
-        }
-      }
-    ]
-  }
-}
+it is saying web socket connection failed
+localhost8080/login
 
-{"success":false,"error":{"code":"AUTH_TOKEN_REQUIRED","message":"Authentication token required","timestamp":"2025-09-10T09:59:19.904Z","path":"/auth/login"}}
-
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+websocket.ts:37 Connecting to WebSocket: ws://localhost:3001
+react-router-dom.js?v=f1b7e739:4393 ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+warnOnce @ react-router-dom.js?v=f1b7e739:4393
+logDeprecation @ react-router-dom.js?v=f1b7e739:4396
+logV6DeprecationWarnings @ react-router-dom.js?v=f1b7e739:4399
+(anonymous) @ react-router-dom.js?v=f1b7e739:5271
+commitHookEffectListMount @ chunk-R6S4VRB5.js?v=f1b7e739:16915
+commitPassiveMountOnFiber @ chunk-R6S4VRB5.js?v=f1b7e739:18156
+commitPassiveMountEffects_complete @ chunk-R6S4VRB5.js?v=f1b7e739:18129
+commitPassiveMountEffects_begin @ chunk-R6S4VRB5.js?v=f1b7e739:18119
+commitPassiveMountEffects @ chunk-R6S4VRB5.js?v=f1b7e739:18109
+flushPassiveEffectsImpl @ chunk-R6S4VRB5.js?v=f1b7e739:19490
+flushPassiveEffects @ chunk-R6S4VRB5.js?v=f1b7e739:19447
+performSyncWorkOnRoot @ chunk-R6S4VRB5.js?v=f1b7e739:18868
+flushSyncCallbacks @ chunk-R6S4VRB5.js?v=f1b7e739:9119
+commitRootImpl @ chunk-R6S4VRB5.js?v=f1b7e739:19432
+commitRoot @ chunk-R6S4VRB5.js?v=f1b7e739:19277
+finishConcurrentRender @ chunk-R6S4VRB5.js?v=f1b7e739:18805
+performConcurrentWorkOnRoot @ chunk-R6S4VRB5.js?v=f1b7e739:18718
+workLoop @ chunk-R6S4VRB5.js?v=f1b7e739:197
+flushWork @ chunk-R6S4VRB5.js?v=f1b7e739:176
+performWorkUntilDeadline @ chunk-R6S4VRB5.js?v=f1b7e739:384
+react-router-dom.js?v=f1b7e739:4393 ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+warnOnce @ react-router-dom.js?v=f1b7e739:4393
+logDeprecation @ react-router-dom.js?v=f1b7e739:4396
+logV6DeprecationWarnings @ react-router-dom.js?v=f1b7e739:4402
+(anonymous) @ react-router-dom.js?v=f1b7e739:5271
+commitHookEffectListMount @ chunk-R6S4VRB5.js?v=f1b7e739:16915
+commitPassiveMountOnFiber @ chunk-R6S4VRB5.js?v=f1b7e739:18156
+commitPassiveMountEffects_complete @ chunk-R6S4VRB5.js?v=f1b7e739:18129
+commitPassiveMountEffects_begin @ chunk-R6S4VRB5.js?v=f1b7e739:18119
+commitPassiveMountEffects @ chunk-R6S4VRB5.js?v=f1b7e739:18109
+flushPassiveEffectsImpl @ chunk-R6S4VRB5.js?v=f1b7e739:19490
+flushPassiveEffects @ chunk-R6S4VRB5.js?v=f1b7e739:19447
+performSyncWorkOnRoot @ chunk-R6S4VRB5.js?v=f1b7e739:18868
+flushSyncCallbacks @ chunk-R6S4VRB5.js?v=f1b7e739:9119
+commitRootImpl @ chunk-R6S4VRB5.js?v=f1b7e739:19432
+commitRoot @ chunk-R6S4VRB5.js?v=f1b7e739:19277
+finishConcurrentRender @ chunk-R6S4VRB5.js?v=f1b7e739:18805
+performConcurrentWorkOnRoot @ chunk-R6S4VRB5.js?v=f1b7e739:18718
+workLoop @ chunk-R6S4VRB5.js?v=f1b7e739:197
+flushWork @ chunk-R6S4VRB5.js?v=f1b7e739:176
+performWorkUntilDeadline @ chunk-R6S4VRB5.js?v=f1b7e739:384
+websocket.ts:42 WebSocket connected to: ws://localhost:3001
+websocket.ts:82 Received WebSocket message: {type: 'connected', payload: {…}, timestamp: '2025-09-10T20:07:43.534Z'}
+completion_list.html?username=&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDark=tr…:12  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDark=tr…:13  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDark=tr…:14  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=ad&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDark=…:12  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=ad&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDark=…:13  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=ad&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDark=…:14  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=adm&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDark…:12  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=adm&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDark…:13  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=adm&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDark…:14  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=admi&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDar…:12  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=admi&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDar…:13  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=admi&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDar…:14  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=admin&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDa…:12  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=admin&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDa…:13  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=admin&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDa…:14  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js net::ERR_FILE_NOT_FOUND
+chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js:1  Failed to load resource: net::ERR_FILE_NOT_FOUND
+completion_list.html?username=admin&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDa…:12  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/utils.js net::ERR_FILE_NOT_FOUND
+completion_list.html?username=admin&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDa…:13  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/extensionState.js net::ERR_FILE_NOT_FOUND
+completion_list.html?username=admin&colorScheme=&screenX=0&screenY=0&effectiveWindowWidth=1079&isDa…:14  GET chrome-extension://pejdijmoenmkgeppbflobdenhhabjlaj/heuristicsRedefinitions.js net::ERR_FILE_NOT_FOUND
+websocket.ts:82 Received WebSocket message: {type: 'login_success', payload: {…}, timestamp: '2025-09-10T20:07:48.688Z'}
+AuthContext.tsx:108 WebSocket login response: {token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO…yNjh9.oi4hj0ZbcRT854Cxr7UtQlK_Nsr6Eo7dAoFzlMkbZKw', user: {…}, permissions: Array(14)}
+AuthContext.tsx:111 Destructured token, user, and permissions: {token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiO…yNjh9.oi4hj0ZbcRT854Cxr7UtQlK_Nsr6Eo7dAoFzlMkbZKw', user: {…}, permissions: Array(14)}
+AuthContext.tsx:125 WebSocket login error: TypeError: Cannot read properties of undefined (reading 'headers')
+    at login (AuthContext.tsx:115:20)
+    at async handleSubmit (Login.tsx:65:7)
+login @ AuthContext.tsx:125
+await in login
+handleSubmit @ Login.tsx:65
+callCallback2 @ chunk-R6S4VRB5.js?v=f1b7e739:3674
+invokeGuardedCallbackDev @ chunk-R6S4VRB5.js?v=f1b7e739:3699
+invokeGuardedCallback @ chunk-R6S4VRB5.js?v=f1b7e739:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-R6S4VRB5.js?v=f1b7e739:3736
+executeDispatch @ chunk-R6S4VRB5.js?v=f1b7e739:7014
+processDispatchQueueItemsInOrder @ chunk-R6S4VRB5.js?v=f1b7e739:7034
+processDispatchQueue @ chunk-R6S4VRB5.js?v=f1b7e739:7043
+dispatchEventsForPlugins @ chunk-R6S4VRB5.js?v=f1b7e739:7051
+(anonymous) @ chunk-R6S4VRB5.js?v=f1b7e739:7174
+batchedUpdates$1 @ chunk-R6S4VRB5.js?v=f1b7e739:18913
+batchedUpdates @ chunk-R6S4VRB5.js?v=f1b7e739:3579
+dispatchEventForPluginEventSystem @ chunk-R6S4VRB5.js?v=f1b7e739:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-R6S4VRB5.js?v=f1b7e739:5478
+dispatchEvent @ chunk-R6S4VRB5.js?v=f1b7e739:5472
+dispatchDiscreteEvent @ chunk-R6S4VRB5.js?v=f1b7e739:5449
+login:1 Access to fetch at 'http://localhost:3001/api/auth/login' from origin 'http://localhost:8081' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+api.ts:36  POST http://localhost:3001/api/auth/login net::ERR_FAILED
+post @ api.ts:36
+login @ AuthContext.tsx:128
+await in login
+handleSubmit @ Login.tsx:65
+callCallback2 @ chunk-R6S4VRB5.js?v=f1b7e739:3674
+invokeGuardedCallbackDev @ chunk-R6S4VRB5.js?v=f1b7e739:3699
+invokeGuardedCallback @ chunk-R6S4VRB5.js?v=f1b7e739:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-R6S4VRB5.js?v=f1b7e739:3736
+executeDispatch @ chunk-R6S4VRB5.js?v=f1b7e739:7014
+processDispatchQueueItemsInOrder @ chunk-R6S4VRB5.js?v=f1b7e739:7034
+processDispatchQueue @ chunk-R6S4VRB5.js?v=f1b7e739:7043
+dispatchEventsForPlugins @ chunk-R6S4VRB5.js?v=f1b7e739:7051
+(anonymous) @ chunk-R6S4VRB5.js?v=f1b7e739:7174
+batchedUpdates$1 @ chunk-R6S4VRB5.js?v=f1b7e739:18913
+batchedUpdates @ chunk-R6S4VRB5.js?v=f1b7e739:3579
+dispatchEventForPluginEventSystem @ chunk-R6S4VRB5.js?v=f1b7e739:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-R6S4VRB5.js?v=f1b7e739:5478
+dispatchEvent @ chunk-R6S4VRB5.js?v=f1b7e739:5472
+dispatchDiscreteEvent @ chunk-R6S4VRB5.js?v=f1b7e739:5449
+AuthContext.tsx:142 HTTP login fallback failed: TypeError: Failed to fetch
+    at ApiClient.post (api.ts:36:28)
+    at login (AuthContext.tsx:128:36)
+    at async handleSubmit (Login.tsx:65:7)
+login @ AuthContext.tsx:142
+await in login
+handleSubmit @ Login.tsx:65
+callCallback2 @ chunk-R6S4VRB5.js?v=f1b7e739:3674
+invokeGuardedCallbackDev @ chunk-R6S4VRB5.js?v=f1b7e739:3699
+invokeGuardedCallback @ chunk-R6S4VRB5.js?v=f1b7e739:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-R6S4VRB5.js?v=f1b7e739:3736
+executeDispatch @ chunk-R6S4VRB5.js?v=f1b7e739:7014
+processDispatchQueueItemsInOrder @ chunk-R6S4VRB5.js?v=f1b7e739:7034
+processDispatchQueue @ chunk-R6S4VRB5.js?v=f1b7e739:7043
+dispatchEventsForPlugins @ chunk-R6S4VRB5.js?v=f1b7e739:7051
+(anonymous) @ chunk-R6S4VRB5.js?v=f1b7e739:7174
+batchedUpdates$1 @ chunk-R6S4VRB5.js?v=f1b7e739:18913
+batchedUpdates @ chunk-R6S4VRB5.js?v=f1b7e739:3579
+dispatchEventForPluginEventSystem @ chunk-R6S4VRB5.js?v=f1b7e739:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-R6S4VRB5.js?v=f1b7e739:5478
+dispatchEvent @ chunk-R6S4VRB5.js?v=f1b7e739:5472
+dispatchDiscreteEvent @ chunk-R6S4VRB5.js?v=f1b7e739:5449
+Login.tsx:68 Login error: TypeError: Cannot read properties of undefined (reading 'headers')
+    at login (AuthContext.tsx:115:20)
+    at async handleSubmit (Login.tsx:65:7)

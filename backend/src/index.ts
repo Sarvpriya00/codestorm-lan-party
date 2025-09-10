@@ -2,7 +2,7 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import * as http from 'http';
 import * as WebSocket from 'ws';
-import cors from 'cors'; // Import cors
+const cors = require('cors'); // Import cors
 import authRouter from './routes/auth';
 import problemRouter from './routes/problem';
 import submissionRouter from './routes/submission';
@@ -20,14 +20,21 @@ import { auditLogMiddleware } from './middleware/auditMiddleware'; // Import aud
 import { analyticsJobService } from './services/analyticsJobService';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 const prisma = new PrismaClient();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
 
 // Enable CORS for frontend
-app.use(cors({ origin: 'http://localhost:8080' }));
+const corsOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
+  : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:8080'];
+
+app.use(cors({ 
+  origin: corsOrigins,
+  credentials: true 
+}));
 
 // Use audit log middleware globally
 app.use(auditLogMiddleware);
@@ -76,12 +83,30 @@ initWebSocket(server); // Use the service to initialize WebSocket
 
 // Basic API route
 app.get('/', (req, res) => {
-  res.send('CodeStorm Backend is running!');
+  res.json({
+    message: 'CodeStorm Backend is running!',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    websocket: 'Available'
+  });
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      database: 'connected',
+      websocket: 'active'
+    }
+  });
 });
 
 // Start the server
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+server.listen(Number(port), '0.0.0.0', () => {
+  console.log(`Server running on http://0.0.0.0:${port}`);
+  console.log(`WebSocket server available at ws://0.0.0.0:${port}`);
   
   // Start analytics background job
   analyticsJobService.start();

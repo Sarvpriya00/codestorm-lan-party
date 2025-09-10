@@ -13,11 +13,13 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import websocketService from "@/lib/websocket";
 
 export function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [connectionStatus, setConnectionStatus] = useState("Disconnected");
   
   const { login, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
@@ -29,15 +31,42 @@ export function Login() {
     }
   }, [isAuthenticated, navigate]);
 
+  // Monitor WebSocket connection status
+  useEffect(() => {
+    const checkConnection = () => {
+      if (websocketService.isConnected()) {
+        setConnectionStatus("Connected");
+      } else {
+        setConnectionStatus("Connecting...");
+        // Try to establish connection
+        websocketService.connect().catch((error) => {
+          console.error('WebSocket connection failed:', error);
+          setConnectionStatus("Connection Failed");
+        });
+      }
+    };
+
+    checkConnection();
+    const interval = setInterval(checkConnection, 5000); // Check every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!username.trim() || !password.trim()) {
+      setError("Please enter both username and password");
+      return;
+    }
 
     try {
       await login(username, password);
       navigate('/', { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      console.error('Login error:', err);
+      setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.");
     }
   };
 
@@ -141,7 +170,7 @@ export function Login() {
         {/* Footer */}
         <div className="text-center text-xs text-muted-foreground">
           <p>CodeStorm Contest Platform v1.0</p>
-          <p>Offline Mode • No Internet Required</p>
+          <p>WebSocket Status: <span className={connectionStatus === "Connected" ? "text-green-500" : connectionStatus === "Connection Failed" ? "text-red-500" : "text-yellow-500"}>{connectionStatus}</span></p>
         </div>
       </div>
     </div>
