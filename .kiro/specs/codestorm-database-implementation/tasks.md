@@ -19,7 +19,7 @@
   - Implement IP address tracking and validation for security
   - _Requirements: 1.1, 1.2, 1.3, 6.1, 6.4_
 
-- [ ] 3. Contest Management System
+- [x] 3. Contest Management System
 - [x] 3.1 Implement Contest CRUD Operations
   - Create ContestController with full lifecycle management (create, update, phase control)
   - Implement ContestService for business logic and state management
@@ -32,7 +32,7 @@
   - Write validation logic for contest-problem relationships and constraints
   - _Requirements: 2.2, 2.3_
 
-- [ ] 3.3 Implement Contest Participation Management
+- [x] 3.3 Implement Contest Participation Management
   - Create ContestUserService for managing participant enrollment and status
   - Implement API endpoints for joining contests and managing participant status
   - Write business logic for participant eligibility and status tracking

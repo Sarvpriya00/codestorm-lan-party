@@ -63,7 +63,6 @@ export function Login() {
 
     try {
       await login(username, password);
-      navigate('/', { replace: true });
     } catch (err) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.");

@@ -1,11 +1,14 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { authenticateToken } from '../middleware/authMiddleware';
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import cors from 'cors';
 
 const prisma = new PrismaClient();
 const router = Router();
+
+interface AuthRequest extends Request {
+  user?: User;
+}
 
 const allRoutes = [
   { path: '/', component: 'Dashboard', title: 'Dashboard', icon: 'Home', requiredPermissions: [100] },
@@ -18,9 +21,9 @@ const allRoutes = [
   { path: '/admin/control', component: 'AdminControl', title: 'Contest Control', icon: 'Settings', requiredPermissions: [800] },
 ];
 
-router.get('/user/routes-and-permissions', cors(), authenticateToken, async (req: Request, res: Response) => {
+router.get('/user/routes-and-permissions', cors(), authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    const user = (req as any).user;
+    const user = req.user;
     if (!user || !user.roleId) {
       return res.status(401).json({ error: 'Unauthorized' });
     }

@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
-import { Permission } from '@prisma/client';
+import { Permission, User } from '@prisma/client'; // Import User type
 import { permissionService } from '../services/permissionService';
 import { PrismaClient } from '@prisma/client';
+import asyncHandler from 'express-async-handler'; // Import asyncHandler
 
 dotenv.config();
 
@@ -11,6 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretjwtkey';
 const prisma = new PrismaClient();
 
 interface AuthRequest extends Request {
+  user?: User;
   userId?: string;
   userRole?: string;
   userPermissions?: Permission[];
@@ -28,12 +30,12 @@ interface JWTPayload {
 /**
  * Enhanced authentication middleware with IP tracking
  */
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = asyncHandler(async (req: AuthRequest, res: Response, next: NextFunction) => { // Wrap with asyncHandler
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (token == null) {
-    return res.status(401).json({ 
+    res.status(401).json({ 
       success: false,
       error: {
         code: 'AUTH_TOKEN_REQUIRED',
@@ -42,12 +44,33 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
         path: req.path
       }
     });
+    return;
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
-    
-    // Set user information
+
+    // Fetch user from database
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { role: true }, // Include role information
+    });
+
+    if (!user) {
+      res.status(403).json({ 
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found',
+          timestamp: new Date().toISOString(),
+          path: req.path
+        }
+      });
+      return;
+    }
+
+    // Attach user object to the request
+    req.user = user;
     req.userId = decoded.userId;
     req.userRole = decoded.role;
     
@@ -69,15 +92,16 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     permissionService.getUserPermissions(decoded.userId)
       .then(userPermissions => {
         req.userPermissions = userPermissions.inheritedPermissions;
+        next(); // Call next() after permissions are loaded
       })
       .catch(permError => {
         console.warn('Failed to load user permissions:', permError);
         req.userPermissions = [];
+        next(); // Call next() even if permissions fail to load
       });
 
-    next();
   } catch (err) {
-    return res.status(403).json({ 
+    res.status(403).json({ 
       success: false,
       error: {
         code: 'AUTH_TOKEN_INVALID',
@@ -87,7 +111,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
       }
     });
   }
-};
+});
 
 /**
  * Legacy role-based authorization (maintained for backward compatibility)
