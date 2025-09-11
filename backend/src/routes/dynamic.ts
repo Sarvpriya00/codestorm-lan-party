@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authenticateToken } from '../middleware/authMiddleware';
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import cors from 'cors';
 
 const prisma = new PrismaClient();
 const router = Router();
@@ -17,7 +18,7 @@ const allRoutes = [
   { path: '/admin/control', component: 'AdminControl', title: 'Contest Control', icon: 'Settings', requiredPermissions: [800] },
 ];
 
-router.get('/user/routes-and-permissions', authenticateToken, async (req: Request, res: Response) => {
+router.get('/user/routes-and-permissions', cors(), authenticateToken, async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
     if (!user || !user.roleId) {

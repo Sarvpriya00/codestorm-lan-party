@@ -23,18 +23,42 @@ const app = express();
 const port = process.env.PORT || 3001;
 const prisma = new PrismaClient();
 
-// Middleware to parse JSON bodies
-app.use(express.json());
+// Add this logging middleware right after app initialization
+app.use((req, res, next) => {
+  console.log(`
+--- Incoming Request ---`);
+  console.log(`Method: ${req.method}`);
+  console.log(`URL: ${req.originalUrl}`);
+  console.log(`Headers:`, req.headers);
 
-// Enable CORS for frontend
+  // Log response headers when the response finishes
+  res.on('finish', () => {
+    console.log(`--- Outgoing Response ---`);
+    console.log(`Status: ${res.statusCode}`);
+    console.log(`Headers:`, res.getHeaders());
+  });
+  next();
+});
+
+// Enable CORS for frontend (should be one of the first middlewares)
 const corsOrigins = process.env.CORS_ORIGIN 
   ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim())
   : ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:8080'];
 
-app.use(cors({ 
-  origin: corsOrigins,
-  credentials: true 
+app.use(cors({
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    console.log('CORS Origin Check:', origin); // Log the origin being checked
+    if (!origin || corsOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
 }));
+
+// Middleware to parse JSON bodies
+app.use(express.json());
 
 // Use audit log middleware globally
 app.use(auditLogMiddleware);

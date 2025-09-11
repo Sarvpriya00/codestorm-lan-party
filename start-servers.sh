@@ -12,8 +12,6 @@ sleep 2
 # Start backend server
 echo "🖥️  Starting backend server on port 3001..."
 cd backend && npm run dev &
-BACKEND_PID=$!
-cd ..
 
 # Wait for backend to start
 echo "⏳ Waiting for backend to start..."

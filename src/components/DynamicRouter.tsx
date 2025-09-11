@@ -1,26 +1,32 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
+
 import { apiClient as api } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Layout } from '@/components/Layout';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import NotFound from '@/pages/NotFound';
 
+// Correctly use lazy with default exports
 const pageComponents: { [key: string]: React.LazyExoticComponent<React.ComponentType<any>> } = {
-  Dashboard: lazy(() => import('@/pages/Dashboard')),
-  Problems: lazy(() => import('@/pages/Problems')),
-  Leaderboard: lazy(() => import('@/pages/Leaderboard')),
-  JudgeQueue: lazy(() => import('@/pages/JudgeQueue')),
-  MySubmissions: lazy(() => import('@/pages/MySubmissions')),
-  AdminUsers: lazy(() => import('@/pages/AdminUsers')),
-  AdminAnalytics: lazy(() => import('@/pages/AdminAnalytics')),
-  AdminControl: lazy(() => import('@/pages/AdminControl')),
+  Dashboard: lazy(() => import('@/pages/Dashboard').then(module => ({ default: module.Dashboard }))),
+  Problems: lazy(() => import('@/pages/Problems').then(module => ({ default: module.Problems }))),
+  Leaderboard: lazy(() => import('@/pages/Leaderboard').then(module => ({ default: module.Leaderboard }))),
+  JudgeQueue: lazy(() => import('@/pages/JudgeQueue').then(module => ({ default: module.JudgeQueue }))),
+  MySubmissions: lazy(() => import('@/pages/MySubmissions').then(module => ({ default: module.MySubmissions }))),
+  AdminUsers: lazy(() => import('@/pages/AdminUsers').then(module => ({ default: module.AdminUsers }))),
+  AdminAnalytics: lazy(() => import('@/pages/AdminAnalytics').then(module => ({ default: module.AdminAnalytics }))),
+  AdminControl: lazy(() => import('@/pages/AdminControl').then(module => ({ default: module.AdminControl }))),
 };
 
 interface DynamicRoute {
   path: string;
   component: string;
   requiredPermissions: number[];
+}
+
+interface ApiResponse {
+  dynamicRoutes: DynamicRoute[];
 }
 
 export const DynamicRouter = () => {
@@ -35,8 +41,8 @@ export const DynamicRouter = () => {
         return;
       }
       try {
-        const response = await api.get('/dynamic/user/routes-and-permissions');
-        setRoutes(response.data.dynamicRoutes);
+        const response = await api.get<ApiResponse>('/dynamic/user/routes-and-permissions');
+        setRoutes(response.dynamicRoutes);
       } catch (error) {
         console.error('Failed to fetch routes:', error);
       } finally {

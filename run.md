@@ -28,51 +28,41 @@ npm install
 # bun install
 ```
 
-### 2. Backend Setup and Start
+## 2. Running the Application
 
-The backend requires a database. This project uses Prisma, and you'll need to generate the Prisma client, run migrations, and optionally seed the database.
+You can use the provided shell scripts to easily start both the backend and frontend servers.
 
-```bash
-# Ensure you are in the 'backend' directory
-cd backend
+### Option 1: Development Environment (`start-dev.sh`)
 
-# Generate Prisma client (this is usually done automatically on npm install via postinstall script)
-npm run postinstall
-# or bun run postinstall
-
-# Run database migrations
-npm run migrate
-# or bun run migrate
-
-# Optionally, seed the database with initial data
-npm run seed
-# or bun run seed
-
-# Build the backend TypeScript code
-npm run build
-# or bun run build
-
-# Start the backend server
-npm run start
-# or bun run start
-```
-
-The backend server should now be running, typically on `http://localhost:3000` (or as configured in its environment variables).
-
-### 3. Frontend Setup and Start
-
-Once the backend is running, you can start the frontend development server.
+This script is ideal for local development. It installs dependencies (if needed), generates the Prisma client, creates test users, and starts both servers.
 
 ```bash
-# Navigate back to the root directory
-cd ..
-
-# Start the frontend development server
-npm run dev
-# or bun run dev
+# In the root directory
+./start-dev.sh
 ```
 
-The frontend application should now be accessible in your web browser, typically at `http://localhost:5173` (or as indicated by Vite in your terminal).
+*   **Backend:** Runs on `http://localhost:3000`
+*   **Frontend:** Runs on `http://localhost:5173` (or as indicated by Vite)
+*   **Test Credentials:**
+    *   Username: `test_user`, Password: `test123`
+    *   Username: `admin`, Password: `admin123`
+
+### Option 2: Servers with Specific Configuration (`start-servers.sh`)
+
+This script is useful for a more controlled environment, explicitly setting the backend port and API base URL for the frontend. It also includes a health check for the backend.
+
+```bash
+# In the root directory
+./start-servers.sh
+```
+
+*   **Backend:** Runs on `http://localhost:3001`
+*   **Frontend:** Connects to backend at `http://localhost:3001/api`. The frontend's port will be indicated in the terminal output.
+*   **Test Credentials:**
+    *   Username: `admin`, Password: `admin123`
+    *   Username: `test_user`, Password: `test123`
+
+**Note:** After running either script, you can stop all servers by pressing `Ctrl+C` in the terminal where the script is running.
 
 ## Running Tests
 
