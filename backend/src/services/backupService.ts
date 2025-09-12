@@ -1,7 +1,36 @@
-import { PrismaClient, BackupRecord, BackupStatus } from '@prisma/client';
+import { 
+    PrismaClient, 
+    BackupRecord, 
+    BackupStatus, 
+    User, 
+    Role, 
+    Permission, 
+    Contest, 
+    QuestionProblem, 
+    Submission, 
+    Review, 
+    AuditLog, 
+    Attendance, 
+    Leaderboard, 
+    SystemControl, 
+    ContestUser, 
+    ContestProblem, 
+    Analytics, 
+    ScoreEvent, 
+    Seat, 
+    ContestState,
+    Prisma,
+    RolePermission
+} from '@prisma/client';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Parser } from 'json2csv';
+import { serializeJsonSafe } from '../utils/serialization';
+import * as bcrypt from 'bcryptjs';
+
+type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
+interface JsonObject extends Record<string, JsonValue> {}
+interface JsonArray extends Array<JsonValue> {}
 
 export interface BackupRequest {
   createdById: string;
@@ -19,7 +48,7 @@ export interface RestoreRequest {
 export interface ExportRequest {
   type: 'submissions' | 'users' | 'contests' | 'problems' | 'leaderboard' | 'audit_logs';
   format: 'csv' | 'json';
-  filters?: any;
+  filters?: JsonObject;
   createdById: string;
 }
 
@@ -31,17 +60,26 @@ export interface BackupData {
     includeFiles: boolean;
     description?: string;
   };
-  schema?: any;
+  schema?: JsonObject;
   data?: {
-    users?: any[];
-    roles?: any[];
-    permissions?: any[];
-    contests?: any[];
-    problems?: any[];
-    submissions?: any[];
-    reviews?: any[];
-    auditLogs?: any[];
-    [key: string]: any[] | undefined;
+    users?: Partial<User>[];
+    roles?: Role[];
+    permissions?: Permission[];
+    rolePermissions?: RolePermission[];
+    contests?: Contest[];
+    problems?: QuestionProblem[];
+    submissions?: Submission[];
+    reviews?: Review[];
+    auditLogs?: AuditLog[];
+    attendance?: Attendance[];
+    leaderboard?: Leaderboard[];
+    systemControls?: SystemControl[];
+    contestUsers?: ContestUser[];
+    contestProblems?: ContestProblem[];
+    analytics?: Analytics[];
+    scoreEvents?: ScoreEvent[];
+    seats?: Seat[];
+    contestStates?: ContestState[];
   };
   files?: string[];
 }
@@ -75,13 +113,14 @@ export class BackupService {
     const backupFileName = `backup_${timestamp.toISOString().replace(/[:.]/g, '-')}.json`;
     const backupFilePath = path.join(this.backupDir, backupFileName);
 
+    let backupRecord: BackupRecord | null = null;
     try {
-      // Create backup record first
-      const backupRecord = await this.prisma.backupRecord.create({
+      // Create backup record first, assume success until failure
+      backupRecord = await this.prisma.backupRecord.create({
         data: {
           createdById: request.createdById,
           filePath: backupFilePath,
-          status: BackupStatus.SUCCESS // Will update if backup fails
+          status: BackupStatus.SUCCESS
         }
       });
 
@@ -107,17 +146,17 @@ export class BackupService {
       }
 
       // Write backup to file
-      await fs.writeFile(backupFilePath, JSON.stringify(backupData, null, 2));
+      await fs.writeFile(backupFilePath, JSON.stringify(serializeJsonSafe(backupData), null, 2));
 
       return backupRecord;
     } catch (error) {
-      // Update backup record status to failed
-      await this.prisma.backupRecord.update({
-        where: { id: (await this.prisma.backupRecord.findFirst({
-          where: { filePath: backupFilePath }
-        }))?.id },
-        data: { status: BackupStatus.FAILED }
-      });
+      // Update backup record status to failed if it was created
+      if (backupRecord) {
+          await this.prisma.backupRecord.update({
+            where: { id: backupRecord.id },
+            data: { status: BackupStatus.FAILED }
+          });
+      }
 
       throw new Error(`Backup creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -226,9 +265,9 @@ export class BackupService {
       // Format data
       if (request.format === 'csv') {
         const parser = new Parser();
-        content = parser.parse(data);
+        content = parser.parse(serializeJsonSafe(data) as any[]);
       } else {
-        content = JSON.stringify(data, null, 2);
+        content = JSON.stringify(serializeJsonSafe(data), null, 2);
       }
 
       // Write to file
@@ -368,16 +407,15 @@ export class BackupService {
       systemControls: await this.prisma.systemControl.findMany(),
       auditLogs: await this.prisma.auditLog.findMany(),
       attendance: await this.prisma.attendance.findMany(),
-      backupRecords: await this.prisma.backupRecord.findMany()
     };
   }
 
   /**
    * Export specific data types
    */
-  private async exportSubmissions(filters?: any): Promise<any[]> {
+  private async exportSubmissions(filters?: JsonObject): Promise<Submission[]> {
     return await this.prisma.submission.findMany({
-      where: filters,
+      where: filters as Prisma.SubmissionWhereInput,
       include: {
         submittedBy: {
           select: { username: true, displayName: true }
@@ -393,9 +431,9 @@ export class BackupService {
     });
   }
 
-  private async exportUsers(filters?: any): Promise<any[]> {
+  private async exportUsers(filters?: JsonObject): Promise<any[]> {
     return await this.prisma.user.findMany({
-      where: filters,
+      where: filters as Prisma.UserWhereInput,
       select: {
         id: true,
         username: true,
@@ -408,9 +446,9 @@ export class BackupService {
     });
   }
 
-  private async exportContests(filters?: any): Promise<any[]> {
+  private async exportContests(filters?: JsonObject): Promise<Contest[]> {
     return await this.prisma.contest.findMany({
-      where: filters,
+      where: filters as Prisma.ContestWhereInput,
       include: {
         _count: {
           select: {
@@ -422,9 +460,9 @@ export class BackupService {
     });
   }
 
-  private async exportProblems(filters?: any): Promise<any[]> {
+  private async exportProblems(filters?: JsonObject): Promise<QuestionProblem[]> {
     return await this.prisma.questionProblem.findMany({
-      where: filters,
+      where: filters as Prisma.QuestionProblemWhereInput,
       include: {
         createdBy: {
           select: { username: true }
@@ -438,9 +476,9 @@ export class BackupService {
     });
   }
 
-  private async exportLeaderboard(filters?: any): Promise<any[]> {
+  private async exportLeaderboard(filters?: JsonObject): Promise<Leaderboard[]> {
     return await this.prisma.leaderboard.findMany({
-      where: filters,
+      where: filters as Prisma.LeaderboardWhereInput,
       include: {
         user: {
           select: { username: true, displayName: true }
@@ -455,9 +493,9 @@ export class BackupService {
     });
   }
 
-  private async exportAuditLogs(filters?: any): Promise<any[]> {
+  private async exportAuditLogs(filters?: JsonObject): Promise<AuditLog[]> {
     return await this.prisma.auditLog.findMany({
-      where: filters,
+      where: filters as Prisma.AuditLogWhereInput,
       include: {
         user: {
           select: { username: true }
@@ -495,7 +533,7 @@ export class BackupService {
   /**
    * Clear existing data (use with extreme caution!)
    */
-  private async clearExistingData(tx: any): Promise<void> {
+  private async clearExistingData(tx: Prisma.TransactionClient): Promise<void> {
     // Delete in reverse dependency order
     await tx.auditLog.deleteMany();
     await tx.systemControl.deleteMany();
@@ -518,35 +556,42 @@ export class BackupService {
   /**
    * Restore data from backup
    */
-  private async restoreData(tx: any, data: NonNullable<BackupData['data']>): Promise<void> {
+  private async restoreData(tx: Prisma.TransactionClient, data: NonNullable<BackupData['data']>): Promise<void> {
     // Restore in dependency order
     if (data.roles) {
       for (const role of data.roles) {
-        await tx.role.create({ data: role });
+        await tx.role.create({ data: role as any });
       }
     }
 
     if (data.permissions) {
       for (const permission of data.permissions) {
-        await tx.permission.create({ data: permission });
+        await tx.permission.create({ data: permission as any });
       }
     }
 
     if (data.rolePermissions) {
       for (const rolePermission of data.rolePermissions) {
-        await tx.rolePermission.create({ data: rolePermission });
+        await tx.rolePermission.create({ data: rolePermission as any });
       }
     }
 
     if (data.users) {
       for (const user of data.users) {
-        await tx.user.create({ data: user });
+        const userData: Partial<User> = { ...user };
+        delete userData.id;
+
+        await tx.user.create({ data: {
+            ...(userData as any),
+            password: bcrypt.hashSync('restored_user_placeholder', 10),
+            ipAddress: null
+        } });
       }
     }
 
     if (data.contests) {
       for (const contest of data.contests) {
-        await tx.contest.create({ data: contest });
+        await tx.contest.create({ data: contest as any });
       }
     }
 

@@ -1,7 +1,9 @@
-import { PrismaClient, SubmissionStatus } from '@prisma/client';
+import { PrismaClient, SubmissionStatus, Prisma } from '@prisma/client';
 import { leaderboardService } from './leaderboardService';
 
 const prisma = new PrismaClient();
+
+type PrismaTransactionClient = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0];
 
 export interface CreateReviewRequest {
   submissionId: string;
@@ -190,7 +192,7 @@ export class ReviewService {
    * Update user scores and problem solved count
    */
   private async updateUserScores(
-    tx: any,
+    tx: PrismaTransactionClient,
     userId: string,
     contestId: string,
     problemId: string,
@@ -222,7 +224,7 @@ export class ReviewService {
 
       // Calculate the best score for this problem
       const bestScore = Math.max(
-        ...allAcceptedSubmissions.map((sub: any) => sub.review?.scoreAwarded || 0)
+        ...allAcceptedSubmissions.map(sub => sub.review?.scoreAwarded || 0)
       );
 
       // Check if this is the first time solving this problem
@@ -235,13 +237,13 @@ export class ReviewService {
       } else {
         // Not first time - check if this is a better score
         // Find the previous best score (excluding current submission)
-        const otherSubmissions = allAcceptedSubmissions.filter((sub: any) => 
+        const otherSubmissions = allAcceptedSubmissions.filter(sub => 
           sub.review?.scoreAwarded !== scoreAwarded
         );
         
         if (otherSubmissions.length > 0) {
           const previousBestScore = Math.max(
-            ...otherSubmissions.map((sub: any) => sub.review?.scoreAwarded || 0)
+            ...otherSubmissions.map(sub => sub.review?.scoreAwarded || 0)
           );
           
           if (scoreAwarded > previousBestScore) {

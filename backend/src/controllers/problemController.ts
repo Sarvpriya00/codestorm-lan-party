@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PrismaClient, Difficulty, SubmissionStatus } from '@prisma/client';
+import { PrismaClient, Difficulty, SubmissionStatus, Prisma } from '@prisma/client';
 import { broadcastMessage } from '../services/websocketService';
 
 const prisma = new PrismaClient();
@@ -16,11 +16,24 @@ interface ProblemFilters {
   isActive?: boolean;
 }
 
+interface QuestionProblemWhereInput {
+  isActive?: boolean;
+  difficultyLevel?: Difficulty;
+  tags?: {
+    contains: string;
+  };
+  contestProblems?: {
+    some: {
+      contestId: string;
+    };
+  };
+}
+
 export const getProblems = async (req: Request, res: Response) => {
   try {
     const { contestId, difficulty, tags, isActive = 'true' } = req.query;
     
-    const filters: any = {
+    const filters: QuestionProblemWhereInput = {
       isActive: isActive === 'true'
     };
 
@@ -58,7 +71,13 @@ export const getProblems = async (req: Request, res: Response) => {
             select: {
               contestId: true,
               order: true,
-              points: true
+              points: true,
+              contest: {
+                select: {
+                  name: true,
+                  status: true
+                }
+              }
             }
           },
           createdBy: {
@@ -138,8 +157,8 @@ export const getProblems = async (req: Request, res: Response) => {
       createdBy: problem.createdBy,
       contests: problem.contestProblems.map(cp => ({
         contestId: cp.contestId,
-        contestName: (cp as any).contest?.name,
-        contestStatus: (cp as any).contest?.status,
+        contestName: cp.contest?.name,
+        contestStatus: cp.contest?.status,
         order: cp.order,
         points: cp.points
       })),
@@ -370,7 +389,7 @@ export const updateProblem = async (req: AuthRequest, res: Response) => {
     }
 
     // For now, allow any authenticated user to update. In production, add proper permission checks
-    const updateData: any = {};
+    const updateData: Prisma.QuestionProblemUpdateInput = {};
 
     if (questionText !== undefined) {
       updateData.questionText = questionText;

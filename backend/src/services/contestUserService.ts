@@ -1,4 +1,4 @@
-import { PrismaClient, ContestUser, ParticipantStatus, ContestStatus } from '@prisma/client';
+import { PrismaClient, ContestUser, ParticipantStatus, ContestStatus, Prisma } from '@prisma/client';
 
 export interface JoinContestRequest {
   contestId: string;
@@ -196,7 +196,7 @@ export class ContestUserService {
    * Get contest participants with filters
    */
   async getContestParticipants(contestId: string, filters: Omit<ParticipantFilters, 'contestId'> = {}): Promise<ContestUserWithDetails[]> {
-    const where: any = { contestId };
+    const where: Prisma.ContestUserWhereInput = { contestId };
 
     if (filters.userId) {
       where.userId = filters.userId;
@@ -248,7 +248,7 @@ export class ContestUserService {
    * Get user's contest participations
    */
   async getUserContests(userId: string, filters: Omit<ParticipantFilters, 'userId'> = {}): Promise<ContestUserWithDetails[]> {
-    const where: any = { userId };
+    const where: Prisma.ContestUserWhereInput = { userId };
 
     if (filters.contestId) {
       where.contestId = filters.contestId;

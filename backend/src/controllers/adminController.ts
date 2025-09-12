@@ -235,6 +235,15 @@ export const updateContestState = async (req: AuthRequest, res: Response) => {
   }
 };
 
+interface AuditLogFilters {
+  userId?: string;
+  action?: string;
+  permissionId?: string;
+  ipAddress?: string;
+  startDate?: Date;
+  endDate?: Date;
+}
+
 export const getAuditLogs = async (req: AuthRequest, res: Response) => {
   const { 
     page = 1, 
@@ -248,7 +257,7 @@ export const getAuditLogs = async (req: AuthRequest, res: Response) => {
   } = req.query;
 
   try {
-    const filters: any = {};
+    const filters: AuditLogFilters = {};
     
     if (userId) filters.userId = userId as string;
     if (action) filters.action = action as string;

@@ -22,7 +22,7 @@ const mockPrisma = {
   submission: {
     count: vi.fn(),
   },
-} as any;
+} as Partial<PrismaClient>;
 
 describe('ContestUserService', () => {
   let contestUserService: ContestUserService;

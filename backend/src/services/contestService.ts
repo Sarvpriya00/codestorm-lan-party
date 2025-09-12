@@ -1,4 +1,4 @@
-import { PrismaClient, Contest, ContestStatus } from '@prisma/client';
+import { PrismaClient, Contest, ContestStatus, Prisma } from '@prisma/client';
 
 export interface CreateContestRequest {
   name: string;
@@ -141,7 +141,7 @@ export class ContestService {
    * Get contests with filters
    */
   async getContests(filters: ContestFilters = {}): Promise<Contest[]> {
-    const where: any = {};
+    const where: Prisma.ContestWhereInput = {};
 
     if (filters.status) {
       where.status = filters.status;

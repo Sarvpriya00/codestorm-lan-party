@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ContestStatus } from '@prisma/client';
+import { ContestStatus, ParticipantStatus } from '@prisma/client';
 import { contestService, CreateContestRequest, UpdateContestRequest, ContestFilters } from '../services/contestService';
 import { contestProblemService, AddProblemToContestRequest, UpdateContestProblemRequest } from '../services/contestProblemService';
 import { contestUserService, JoinContestRequest, UpdateParticipantStatusRequest } from '../services/contestUserService';
@@ -8,6 +8,12 @@ import { broadcastMessage } from '../services/websocketService';
 interface AuthRequest extends Request {
   userId?: string;
   userRole?: string;
+}
+
+interface ContestParticipantFilters {
+  status?: ParticipantStatus;
+  joinedAfter?: Date;
+  joinedBefore?: Date;
 }
 
 /**
@@ -577,10 +583,10 @@ export const getContestParticipants = async (req: Request, res: Response) => {
     const { contestId } = req.params;
     const { status, joinedAfter, joinedBefore } = req.query;
 
-    const filters: any = {};
+    const filters: ContestParticipantFilters = {};
 
-    if (status) {
-      filters.status = status;
+    if (status && typeof status === 'string' && Object.values(ParticipantStatus).includes(status as ParticipantStatus)) {
+      filters.status = status as ParticipantStatus;
     }
 
     if (joinedAfter) {
@@ -612,10 +618,10 @@ export const getUserContests = async (req: AuthRequest, res: Response) => {
 
     const { status, joinedAfter, joinedBefore } = req.query;
 
-    const filters: any = {};
+    const filters: ContestParticipantFilters = {};
 
-    if (status) {
-      filters.status = status;
+    if (status && typeof status === 'string' && Object.values(ParticipantStatus).includes(status as ParticipantStatus)) {
+      filters.status = status as ParticipantStatus;
     }
 
     if (joinedAfter) {

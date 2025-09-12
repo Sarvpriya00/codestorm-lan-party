@@ -2,7 +2,7 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import * as http from 'http';
 import * as WebSocket from 'ws';
-const cors = require('cors'); // Import cors
+import cors from 'cors'; // Import cors
 import authRouter from './routes/auth';
 import problemRouter from './routes/problem';
 import submissionRouter from './routes/submission';

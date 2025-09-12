@@ -1,9 +1,11 @@
 import * as WebSocket from 'ws';
-import { PrismaClient } from '@prisma/client';
+import * as http from 'http';
+import { PrismaClient, Submission, Leaderboard, Contest, SystemControl, Analytics, Attendance } from '@prisma/client';
 import { permissionService } from './permissionService';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
+import { serializeJsonSafe } from '../utils/serialization';
 
 dotenv.config();
 
@@ -13,11 +15,36 @@ interface AuthenticatedWebSocket extends WebSocket {
   permissions?: number[];
 }
 
-interface WebSocketMessage {
-  type: string;
-  payload: any;
-  timestamp: string;
+// Type guards for inbound message payloads
+function isLoginPayload(payload: unknown): payload is { username: string; password: string } {
+    return (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'username' in payload &&
+        typeof (payload as any).username === 'string' &&
+        'password' in payload &&
+        typeof (payload as any).password === 'string'
+    );
 }
+
+function isAuthenticatePayload(payload: unknown): payload is { userId: string } {
+    return (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'userId' in payload &&
+        typeof (payload as any).userId === 'string'
+    );
+}
+
+function isJoinContestPayload(payload: unknown): payload is { contestId: string } {
+    return (
+        typeof payload === 'object' &&
+        payload !== null &&
+        'contestId' in payload &&
+        typeof (payload as any).contestId === 'string'
+    );
+}
+
 
 interface BroadcastOptions {
   requiredPermissions?: number[];
@@ -29,29 +56,27 @@ interface BroadcastOptions {
 let wss: WebSocket.Server;
 const prisma = new PrismaClient();
 
-export const initWebSocket = (server: any) => {
+export const initWebSocket = (server: http.Server) => {
   try {
     wss = new WebSocket.Server({ 
       server,
-      perMessageDeflate: false // Disable compression for better compatibility
+      perMessageDeflate: false
     });
 
     wss.on('connection', (ws: AuthenticatedWebSocket, req) => {
       const clientIP = req.socket.remoteAddress;
-      const origin = req.headers.origin; // Get the Origin header
+      const origin = req.headers.origin;
 
-      // Allow specific origins for WebSocket connections
-      const allowedOrigins = ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:3000']; // Add other allowed origins as needed
+      const allowedOrigins = ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:3000'];
 
       if (origin && !allowedOrigins.includes(origin)) {
         console.warn(`WebSocket connection from disallowed origin: ${origin}. Closing connection.`);
-        ws.close(1000, 'Origin not allowed'); // Close with code 1000 (Normal Closure) and reason
+        ws.close(1000, 'Origin not allowed');
         return;
       }
 
       console.log(`Client connected to WebSocket from ${clientIP} (Origin: ${origin || 'N/A'})`);
 
-      // Send welcome message
       ws.send(JSON.stringify({
         type: 'connected',
         payload: { message: 'WebSocket connection established' },
@@ -61,6 +86,16 @@ export const initWebSocket = (server: any) => {
       ws.on('message', async (message: string) => {
         try {
           const data = JSON.parse(message);
+          
+          if (typeof data !== 'object' || data === null || typeof data.type !== 'string') {
+            ws.send(JSON.stringify({
+              type: 'error',
+              payload: { message: 'Invalid message format' },
+              timestamp: new Date().toISOString()
+            }));
+            return;
+          }
+
           console.log(`Received WebSocket message: ${data.type}`);
           await handleWebSocketMessage(ws, data);
         } catch (error) {
@@ -92,16 +127,28 @@ export const initWebSocket = (server: any) => {
   }
 };
 
-const handleWebSocketMessage = async (ws: AuthenticatedWebSocket, data: any) => {
+const handleWebSocketMessage = async (ws: AuthenticatedWebSocket, data: { type: string; payload: unknown }) => {
   switch (data.type) {
     case 'login':
-      await handleLogin(ws, data.payload);
+      if (isLoginPayload(data.payload)) {
+        await handleLogin(ws, data.payload);
+      } else {
+        ws.send(JSON.stringify({ type: 'error', payload: { message: 'Invalid login payload' } }));
+      }
       break;
     case 'authenticate':
-      await authenticateWebSocket(ws, data.payload);
+      if (isAuthenticatePayload(data.payload)) {
+        await authenticateWebSocket(ws, data.payload);
+      } else {
+        ws.send(JSON.stringify({ type: 'error', payload: { message: 'Invalid authenticate payload' } }));
+      }
       break;
     case 'join_contest':
-      await joinContest(ws, data.payload.contestId);
+      if (isJoinContestPayload(data.payload)) {
+        await joinContest(ws, data.payload.contestId);
+      } else {
+        ws.send(JSON.stringify({ type: 'error', payload: { message: 'Invalid join_contest payload' } }));
+      }
       break;
     case 'leave_contest':
       ws.contestId = undefined;
@@ -119,10 +166,10 @@ const authenticateWebSocket = async (ws: AuthenticatedWebSocket, payload: { user
     
     ws.send(JSON.stringify({
       type: 'authenticated',
-      payload: { 
+      payload: serializeJsonSafe({ 
         userId: payload.userId,
         permissions: ws.permissions
-      },
+      }),
       timestamp: new Date().toISOString()
     }));
   } catch (error) {
@@ -150,7 +197,6 @@ const handleLogin = async (ws: AuthenticatedWebSocket, payload: { username: stri
   }
 
   try {
-    // Find user in Prisma database with role information
     const user = await prisma.user.findUnique({
       where: { username },
       include: { 
@@ -173,7 +219,6 @@ const handleLogin = async (ws: AuthenticatedWebSocket, payload: { username: stri
       return;
     }
 
-    // Verify password against Prisma database
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -186,7 +231,6 @@ const handleLogin = async (ws: AuthenticatedWebSocket, payload: { username: stri
       return;
     }
 
-    // Generate JWT token
     const token = jwt.sign(
       { 
         userId: user.id, 
@@ -197,7 +241,6 @@ const handleLogin = async (ws: AuthenticatedWebSocket, payload: { username: stri
       { expiresIn: '24h' }
     );
 
-    // Get user permissions
     let permissions: number[] = [];
     try {
       const userPermissions = await permissionService.getUserPermissions(user.id);
@@ -206,35 +249,24 @@ const handleLogin = async (ws: AuthenticatedWebSocket, payload: { username: stri
       console.warn('Failed to fetch permissions, using empty array:', permError);
     }
     
-    // Set WebSocket authentication
     ws.userId = user.id;
     ws.permissions = permissions;
 
-    // Update user's last active and IP address
     await prisma.user.update({
       where: { id: user.id },
       data: { 
         lastActive: new Date(),
-        ipAddress: 'websocket-connection' // You can enhance this to get actual IP
+        ipAddress: 'websocket-connection'
       }
     });
 
-    // Send successful login response
     ws.send(JSON.stringify({
       type: 'login_success',
-      payload: { 
+      payload: serializeJsonSafe({ 
         token,
-        user: {
-          id: user.id,
-          username: user.username,
-          displayName: user.displayName,
-          roleId: user.roleId,
-          scored: user.scored,
-          problemsSolvedCount: user.problemsSolvedCount,
-          role: user.role
-        },
+        user,
         permissions: ws.permissions
-      },
+      }),
       timestamp: new Date().toISOString()
     }));
 
@@ -261,7 +293,6 @@ const joinContest = async (ws: AuthenticatedWebSocket, contestId: string) => {
   }
 
   try {
-    // Verify user is enrolled in contest
     const contestUser = await prisma.contestUser.findUnique({
       where: {
         contestId_userId: {
@@ -294,15 +325,15 @@ const joinContest = async (ws: AuthenticatedWebSocket, contestId: string) => {
   }
 };
 
-export const broadcastMessage = (type: string, payload: any, options: BroadcastOptions = {}) => {
+export const broadcastMessage = (type: string, payload?: unknown, options: BroadcastOptions = {}) => {
   if (!wss) {
     console.warn('WebSocket server not initialized. Cannot broadcast message.');
     return;
   }
 
-  const message: WebSocketMessage = {
+  const message = {
     type,
-    payload,
+    payload: serializeJsonSafe(payload),
     timestamp: new Date().toISOString()
   };
 
@@ -313,16 +344,10 @@ export const broadcastMessage = (type: string, payload: any, options: BroadcastO
 
     const authenticatedClient = client as AuthenticatedWebSocket;
 
-    // Skip if targeting specific user and this isn't them
     if (options.targetUserId && authenticatedClient.userId !== options.targetUserId) return;
-
-    // Skip if excluding specific user and this is them
     if (options.excludeUserId && authenticatedClient.userId === options.excludeUserId) return;
-
-    // Check contest membership if required
     if (options.contestId && authenticatedClient.contestId !== options.contestId) return;
 
-    // Check permissions if required
     if (options.requiredPermissions && options.requiredPermissions.length > 0) {
       const hasPermission = options.requiredPermissions.some(perm => 
         authenticatedClient.permissions?.includes(perm)
@@ -336,50 +361,66 @@ export const broadcastMessage = (type: string, payload: any, options: BroadcastO
   console.log(`Broadcasted message: ${type} to ${Array.from(wss.clients).length} clients`);
 };
 
-// Event broadcasting functions for specific events
-export const broadcastSubmissionUpdate = (submission: any, contestId: string) => {
+// Event broadcasting functions now pass raw Prisma objects, letting broadcastMessage handle serialization.
+export const broadcastSubmissionUpdate = (submission: Submission, contestId: string) => {
   broadcastMessage('submission_update', submission, {
     contestId,
     requiredPermissions: [220, 300, 100] // Participants, judges, admins
   });
 };
 
-export const broadcastLeaderboardUpdate = (leaderboard: any[], contestId: string) => {
+export const broadcastLeaderboardUpdate = (leaderboard: Leaderboard[], contestId: string) => {
   broadcastMessage('leaderboard_update', leaderboard, {
     contestId
   });
 };
 
-export const broadcastContestPhaseChange = (contest: any) => {
+export const broadcastContestPhaseChange = (contest: Contest) => {
   broadcastMessage('contest_phase_change', contest, {
     contestId: contest.id
   });
 };
 
-export const broadcastSystemControl = (control: any, contestId: string) => {
+export const broadcastSystemControl = (control: SystemControl, contestId: string) => {
   broadcastMessage('system_control_update', control, {
     contestId,
     requiredPermissions: [800] // Admin only
   });
 };
 
-export const broadcastJudgeQueueUpdate = (queueData: any, contestId: string) => {
+export const broadcastJudgeQueueUpdate = (queueData: object, contestId: string) => {
   broadcastMessage('judge_queue_update', queueData, {
     contestId,
     requiredPermissions: [300] // Judges only
   });
 };
 
-export const broadcastAnalyticsUpdate = (analytics: any, contestId: string) => {
+export const broadcastAnalyticsUpdate = (analytics: Analytics, contestId: string) => {
   broadcastMessage('analytics_update', analytics, {
     contestId,
     requiredPermissions: [600, 100] // Analytics permission or admin
   });
 };
 
-export const broadcastAttendanceUpdate = (attendance: any, contestId: string) => {
+export const broadcastAttendanceUpdate = (attendance: Attendance, contestId: string) => {
   broadcastMessage('attendance_update', attendance, {
     contestId,
     requiredPermissions: [1100, 100] // Attendance permission or admin
   });
+};
+
+export const broadcastNewProblem = (problem: any, contestId: string) => {
+  broadcastMessage('new_problem', problem, {
+    contestId
+  });
+};
+
+export const broadcastUserUpdate = (user: any) => {
+  broadcastMessage('user_update', user, {
+    targetUserId: user.id
+  });
+};
+
+export const broadcastGlobalNotification = (message: string, level: 'info' | 'warning' | 'error') => {
+  broadcastMessage('global_notification', { message, level });
 };

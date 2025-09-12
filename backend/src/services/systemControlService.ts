@@ -1,9 +1,13 @@
-import { PrismaClient, SystemControl, Contest, ContestStatus } from '@prisma/client';
+import { PrismaClient, SystemControl, Contest, ContestStatus, Prisma } from '@prisma/client';
+
+type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
+interface JsonObject extends Record<string, JsonValue> {}
+interface JsonArray extends Array<JsonValue> {}
 
 export interface SystemControlRequest {
   contestId: string;
   controlCode: number;
-  value: any;
+  value: JsonObject;
   setById: string;
 }
 
@@ -98,7 +102,7 @@ export class SystemControlService {
     this.validatePhaseTransition(contest, data.phase);
 
     // Update contest timing if provided
-    const contestUpdates: any = {};
+    const contestUpdates: Prisma.ContestUpdateInput = {};
     if (data.startTime) {
       contestUpdates.startTime = data.startTime;
     }
@@ -199,7 +203,7 @@ export class SystemControlService {
    * Get system controls for a contest
    */
   async getSystemControls(contestId: string, controlCode?: number): Promise<SystemControl[]> {
-    const where: any = { contestId };
+    const where: Prisma.SystemControlWhereInput = { contestId };
     
     if (controlCode) {
       where.controlCode = controlCode;
@@ -237,8 +241,10 @@ export class SystemControlService {
     });
 
     if (latestPhaseControl && latestPhaseControl.value) {
-      const value = latestPhaseControl.value as any;
-      return value.phase || null;
+      const value = latestPhaseControl.value as JsonObject;
+      if (typeof value.phase === 'string') {
+        return value.phase;
+      }
     }
 
     return null;

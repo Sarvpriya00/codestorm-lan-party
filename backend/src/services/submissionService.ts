@@ -1,4 +1,4 @@
-import { PrismaClient, SubmissionStatus, Submission, Review } from '@prisma/client';
+import { PrismaClient, SubmissionStatus, Submission, Review, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -125,7 +125,7 @@ export class SubmissionService {
     page: number;
     totalPages: number;
   }> {
-    const where: any = {};
+    const where: Prisma.SubmissionWhereInput = {};
 
     if (filters.contestId) {
       where.contestId = filters.contestId;
@@ -311,7 +311,7 @@ export class SubmissionService {
    * Get pending submissions for judge queue
    */
   async getPendingSubmissions(contestId?: string): Promise<Submission[]> {
-    const where: any = {
+    const where: Prisma.SubmissionWhereInput = {
       status: SubmissionStatus.PENDING,
       reviewedById: null
     };
@@ -523,7 +523,7 @@ export class SubmissionService {
     userId: string, 
     contestId?: string
   ): Promise<Submission[]> {
-    const where: any = {
+    const where: Prisma.SubmissionWhereInput = {
       submittedById: userId
     };
 

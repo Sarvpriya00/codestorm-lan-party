@@ -11,9 +11,22 @@ interface AuthRequest extends Request {
   userPermissions?: number[];
 }
 
+type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
+interface JsonObject extends Record<string, JsonValue> {}
+interface JsonArray extends Array<JsonValue> {}
+
+// Type guards to safely access properties on JsonValue
+const isObjectWithId = (val: any): val is { id: JsonValue } => {
+    return typeof val === 'object' && val !== null && 'id' in val;
+}
+
+const isObjectWithProblemWithId = (val: any): val is { problem: { id: JsonValue } } => {
+    return typeof val === 'object' && val !== null && typeof val.problem === 'object' && val.problem !== null && 'id' in val.problem;
+}
+
 export const auditLogMiddleware = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const originalJson = res.json;
-  res.json = function (body?: any) {
+  res.json = function (body?: JsonValue) {
     // Capture response body
     res.locals.responseBody = body;
     return originalJson.call(this, body);
@@ -43,18 +56,20 @@ export const auditLogMiddleware = async (req: AuthRequest, res: Response, next: 
 /**
  * Log specific route actions with permission tracking
  */
+interface AuditLogDetails extends Record<string, any> {}
+
 async function logRouteAction(
   originalUrl: string,
   method: string,
   statusCode: number,
   userId?: string,
   ip?: string,
-  requestBody?: any,
-  responseBody?: any,
+  requestBody?: JsonObject,
+  responseBody?: JsonValue,
   userPermissions?: number[]
 ): Promise<void> {
   let action: string;
-  let details: any = {
+  let details: AuditLogDetails = {
     method,
     statusCode,
     url: originalUrl
@@ -97,7 +112,7 @@ async function logRouteAction(
   else if (originalUrl.includes('/api/contests') && method === 'POST' && statusCode === 201) {
     action = AUDIT_ACTIONS.CONTEST_CREATED;
     details = { 
-      contestId: responseBody?.id,
+      contestId: isObjectWithId(responseBody) ? responseBody.id : undefined,
       contestName: requestBody?.name,
       status: 'success'
     };
@@ -127,7 +142,7 @@ async function logRouteAction(
   else if (originalUrl.includes('/api/admin/problems') && method === 'POST' && statusCode === 201) {
     action = AUDIT_ACTIONS.PROBLEM_CREATED;
     details = { 
-      problemId: responseBody?.problem?.id,
+      problemId: isObjectWithProblemWithId(responseBody) ? responseBody.problem.id : undefined,
       title: requestBody?.title,
       difficulty: requestBody?.difficulty,
       status: 'success'
@@ -147,7 +162,7 @@ async function logRouteAction(
   else if (originalUrl.includes('/api/submissions') && method === 'POST' && statusCode === 201) {
     action = AUDIT_ACTIONS.SUBMISSION_CREATED;
     details = { 
-      submissionId: responseBody?.id,
+      submissionId: isObjectWithId(responseBody) ? responseBody.id : undefined,
       problemId: requestBody?.problemId,
       contestId: requestBody?.contestId,
       language: requestBody?.language,
@@ -168,7 +183,7 @@ async function logRouteAction(
     action = AUDIT_ACTIONS.REVIEW_SUBMITTED;
     details = { 
       submissionId: requestBody?.submissionId,
-      reviewId: responseBody?.id,
+      reviewId: isObjectWithId(responseBody) ? responseBody.id : undefined,
       correct: requestBody?.correct,
       scoreAwarded: requestBody?.scoreAwarded,
       status: 'success'

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { broadcastMessage } from './websocketService';
 
 const prisma = new PrismaClient();
@@ -27,6 +27,16 @@ export interface LeaderboardUpdate {
   oldRank?: number;
   newScore: number;
   oldScore: number;
+}
+
+export interface GlobalLeaderboardEntry {
+  userId: string;
+  username: string;
+  displayName?: string | null;
+  totalScore: number;
+  totalProblemsSolved: number;
+  contestsParticipated: number;
+  averageRank: number;
 }
 
 export class LeaderboardService {
@@ -204,7 +214,7 @@ export class LeaderboardService {
     const { limit = 50, offset = 0, userId } = filters;
 
     // Build where clause
-    const whereClause: any = { contestId };
+    const whereClause: Prisma.LeaderboardWhereInput = { contestId };
     if (userId) {
       whereClause.userId = userId;
     }
@@ -304,15 +314,7 @@ export class LeaderboardService {
   /**
    * Get top performers across all contests
    */
-  async getGlobalLeaderboard(limit: number = 20): Promise<{
-    userId: string;
-    username: string;
-    displayName?: string | null;
-    totalScore: number;
-    totalProblemsSolved: number;
-    contestsParticipated: number;
-    averageRank: number;
-  }[]> {
+  async getGlobalLeaderboard(limit: number = 20): Promise<GlobalLeaderboardEntry[]> {
     const users = await prisma.user.findMany({
       include: {
         leaderboardEntries: {
@@ -351,7 +353,7 @@ export class LeaderboardService {
           averageRank
         };
       })
-      .filter(Boolean)
+      .filter((stat): stat is NonNullable<typeof stat> => stat !== null)
       .sort((a, b) => {
         // Sort by total score, then by average rank (lower is better)
         if (a!.totalScore !== b!.totalScore) {
@@ -361,7 +363,7 @@ export class LeaderboardService {
       })
       .slice(0, limit);
 
-    return globalStats as any[];
+    return globalStats as GlobalLeaderboardEntry[];
   }
 
   /**

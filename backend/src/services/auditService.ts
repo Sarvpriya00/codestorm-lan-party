@@ -1,11 +1,15 @@
-import { PrismaClient, AuditLog } from '@prisma/client';
+import { PrismaClient, AuditLog, Prisma } from '@prisma/client';
+
+type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
+interface JsonObject extends Record<string, JsonValue> {}
+interface JsonArray extends Array<JsonValue> {}
 
 export interface AuditLogRequest {
   userId?: string;
   action: string;
   permissionId?: string;
   ipAddress?: string;
-  details?: any;
+  details?: JsonObject;
 }
 
 export interface AuditLogFilters {
@@ -136,16 +140,13 @@ export class AuditService {
     action: 'LOGIN' | 'LOGOUT' | 'LOGIN_FAILED',
     userId?: string,
     ipAddress?: string,
-    details?: any
+    details?: JsonObject
   ): Promise<AuditLog> {
     return await this.createAuditLog({
       userId,
       action: AUDIT_ACTIONS[action],
       ipAddress,
-      details: {
-        ...details,
-        timestamp: new Date()
-      }
+      details
     });
   }
 
@@ -158,7 +159,7 @@ export class AuditService {
     targetUserId: string,
     permissionId?: string,
     ipAddress?: string,
-    details?: any
+    details?: JsonObject
   ): Promise<AuditLog> {
     return await this.createAuditLog({
       userId: performedById,
@@ -181,7 +182,7 @@ export class AuditService {
     contestId: string,
     permissionId?: string,
     ipAddress?: string,
-    details?: any
+    details?: JsonObject
   ): Promise<AuditLog> {
     return await this.createAuditLog({
       userId,
@@ -204,7 +205,7 @@ export class AuditService {
     submissionId: string,
     permissionId?: string,
     ipAddress?: string,
-    details?: any
+    details?: JsonObject
   ): Promise<AuditLog> {
     return await this.createAuditLog({
       userId,
@@ -226,7 +227,7 @@ export class AuditService {
     userId: string,
     permissionId?: string,
     ipAddress?: string,
-    details?: any
+    details?: JsonObject
   ): Promise<AuditLog> {
     return await this.createAuditLog({
       userId,
@@ -252,7 +253,7 @@ export class AuditService {
     totalPages: number;
   }> {
     const skip = (page - 1) * pageSize;
-    const where: any = {};
+    const where: Prisma.AuditLogWhereInput = {};
 
     // Apply filters
     if (filters.userId) {
@@ -383,7 +384,7 @@ export class AuditService {
     topUsers: { userId: string; username: string; count: number }[];
     logsByDate: { date: string; count: number }[];
   }> {
-    const where: any = {};
+    const where: Prisma.AuditLogWhereInput = {};
     
     if (startDate || endDate) {
       where.timestamp = {};

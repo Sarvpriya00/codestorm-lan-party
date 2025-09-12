@@ -2,13 +2,17 @@ import { describe, it, expect } from 'vitest';
 import { ContestUserService } from '../services/contestUserService';
 import { ParticipantStatus } from '@prisma/client';
 
+interface TestContestUserService extends ContestUserService {
+  validateStatusTransition: (currentStatus: ParticipantStatus, newStatus: ParticipantStatus) => void;
+}
+
 describe('Contest Participation Business Logic Validation', () => {
   describe('Status Transition Validation', () => {
     it('should validate correct status transitions', () => {
       const service = new ContestUserService();
       
       // Access the private method through type assertion for testing
-      const validateStatusTransition = (service as any).validateStatusTransition.bind(service);
+      const validateStatusTransition = (service as TestContestUserService).validateStatusTransition.bind(service);
       
       // Valid transitions
       expect(() => validateStatusTransition(ParticipantStatus.ACTIVE, ParticipantStatus.WITHDRAWN)).not.toThrow();

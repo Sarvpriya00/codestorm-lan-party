@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { SubmissionService, SubmissionFilters } from '../services/submissionService';
 import { SubmissionStatus } from '@prisma/client';
 import { broadcastMessage } from '../services/websocketService';
+import { serializeJsonSafe } from '../utils/serialization';
 
 const submissionService = new SubmissionService();
 
@@ -31,22 +32,10 @@ export const createSubmission = async (req: AuthRequest, res: Response) => {
       language
     });
 
-    // Broadcast submission.created event
-    broadcastMessage('submission.created', {
-      id: submission.id,
-      problemId: submission.problemId,
-      contestId: submission.contestId,
-      submittedById: submission.submittedById,
-      status: submission.status,
-      timestamp: submission.timestamp,
-    });
+    // Broadcast submission.created event with the full, serialized submission object
+    broadcastMessage('submission.created', submission);
 
-    res.status(201).json({
-      message: 'Submission received',
-      submissionId: submission.id,
-      status: submission.status,
-      timestamp: submission.timestamp
-    });
+    res.status(201).json(serializeJsonSafe(submission));
   } catch (error) {
     console.error('Error creating submission:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
@@ -89,7 +78,7 @@ export const getSubmissions = async (req: Request, res: Response) => {
       parseInt(limit as string)
     );
 
-    res.status(200).json(result);
+    res.status(200).json(serializeJsonSafe(result));
   } catch (error) {
     console.error('Error fetching submissions:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -106,7 +95,7 @@ export const getSubmissionById = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Submission not found' });
     }
 
-    res.status(200).json(submission);
+    res.status(200).json(serializeJsonSafe(submission));
   } catch (error) {
     console.error('Error fetching submission:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -133,14 +122,9 @@ export const updateSubmissionStatus = async (req: AuthRequest, res: Response) =>
     });
 
     // Broadcast submission status update
-    broadcastMessage('submission.updated', {
-      id: submission.id,
-      status: submission.status,
-      score: submission.score,
-      updatedAt: new Date()
-    });
+    broadcastMessage('submission.updated', submission);
 
-    res.status(200).json(submission);
+    res.status(200).json(serializeJsonSafe(submission));
   } catch (error) {
     console.error('Error updating submission:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
@@ -166,14 +150,9 @@ export const assignSubmissionToJudge = async (req: AuthRequest, res: Response) =
     const submission = await submissionService.assignSubmissionToJudge(id, judgeId);
 
     // Broadcast assignment event
-    broadcastMessage('submission.assigned', {
-      id: submission.id,
-      judgeId: judgeId,
-      status: submission.status,
-      assignedAt: new Date()
-    });
+    broadcastMessage('submission.assigned', submission);
 
-    res.status(200).json(submission);
+    res.status(200).json(serializeJsonSafe(submission));
   } catch (error) {
     console.error('Error assigning submission:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
@@ -188,7 +167,7 @@ export const getPendingSubmissions = async (req: Request, res: Response) => {
 
   try {
     const submissions = await submissionService.getPendingSubmissions(contestId as string);
-    res.status(200).json(submissions);
+    res.status(200).json(serializeJsonSafe(submissions));
   } catch (error) {
     console.error('Error fetching pending submissions:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -204,7 +183,7 @@ export const getJudgeQueue = async (req: AuthRequest, res: Response) => {
 
   try {
     const assignedSubmissions = await submissionService.getJudgeAssignedSubmissions(userId);
-    res.status(200).json(assignedSubmissions);
+    res.status(200).json(serializeJsonSafe(assignedSubmissions));
   } catch (error) {
     console.error('Error fetching judge queue:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -243,15 +222,9 @@ export const createReview = async (req: AuthRequest, res: Response) => {
     });
 
     // Broadcast review completion
-    broadcastMessage('submission.reviewed', {
-      submissionId: review.submissionId,
-      correct: review.correct,
-      scoreAwarded: review.scoreAwarded,
-      reviewedAt: review.timestamp,
-      reviewedBy: userId
-    });
+    broadcastMessage('submission.reviewed', review);
 
-    res.status(201).json(review);
+    res.status(201).json(serializeJsonSafe(review));
   } catch (error) {
     console.error('Error creating review:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
@@ -266,7 +239,7 @@ export const getSubmissionStats = async (req: Request, res: Response) => {
 
   try {
     const stats = await submissionService.getSubmissionStats(contestId);
-    res.status(200).json(stats);
+    res.status(200).json(serializeJsonSafe(stats));
   } catch (error) {
     console.error('Error fetching submission stats:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -293,7 +266,7 @@ export const getUserSubmissionHistory = async (req: AuthRequest, res: Response) 
       targetUserId,
       contestId as string
     );
-    res.status(200).json(submissions);
+    res.status(200).json(serializeJsonSafe(submissions));
   } catch (error) {
     console.error('Error fetching user submission history:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -313,7 +286,7 @@ export const getMySubmissions = async (req: AuthRequest, res: Response) => {
       userId,
       contestId as string
     );
-    res.status(200).json(submissions);
+    res.status(200).json(serializeJsonSafe(submissions));
   } catch (error) {
     console.error('Error fetching my submissions:', error);
     res.status(500).json({ message: 'Internal server error' });

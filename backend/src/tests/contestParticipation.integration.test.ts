@@ -1,18 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import request from 'supertest';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
 import contestRoutes from '../routes/contest';
 import { authenticateToken } from '../middleware/authMiddleware';
 
 // Mock the auth middleware for testing
 vi.mock('../middleware/authMiddleware', () => ({
-  authenticateToken: (req: any, res: any, next: any) => {
+  authenticateToken: (req: Request, res: Response, next: NextFunction) => {
     req.userId = 'test-user-id';
     req.userRole = 'participant';
     next();
   },
-  authorizePermissions: (permissions: number[]) => (req: any, res: any, next: any) => {
+  authorizePermissions: (permissions: number[]) => (req: Request, res: Response, next: NextFunction) => {
     next();
   },
 }));
@@ -41,7 +41,7 @@ describe('Contest Participation API Integration', () => {
   describe('POST /api/contests/:contestId/join', () => {
     it('should return 401 if user not authenticated', async () => {
       // Temporarily override the mock to simulate unauthenticated request
-      vi.mocked(authenticateToken).mockImplementationOnce((req: any, res: any, next: any) => {
+      vi.mocked(authenticateToken).mockImplementationOnce((req: Request, res: Response, next: NextFunction) => {
         res.status(401).json({ message: 'User not authenticated' });
       });
 

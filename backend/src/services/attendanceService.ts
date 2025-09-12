@@ -1,4 +1,4 @@
-import { PrismaClient, Attendance, AttendanceStatus } from '@prisma/client';
+import { PrismaClient, Attendance, AttendanceStatus, Prisma } from '@prisma/client';
 
 export interface AttendanceRequest {
   contestId: string;
@@ -226,7 +226,7 @@ export class AttendanceService {
    * Get attendance records with filters
    */
   async getAttendanceRecords(filters: AttendanceFilters = {}): Promise<Attendance[]> {
-    const where: any = {};
+    const where: Prisma.AttendanceWhereInput = {};
 
     if (filters.contestId) {
       where.contestId = filters.contestId;

@@ -1,4 +1,8 @@
-import { PrismaClient, Difficulty } from '@prisma/client';
+import { PrismaClient, Difficulty, SubmissionStatus } from '@prisma/client';
+
+type JsonValue = string | number | boolean | null | JsonObject | JsonArray;
+interface JsonObject extends Record<string, JsonValue> {}
+interface JsonArray extends Array<JsonValue> {}
 
 const prisma = new PrismaClient();
 
@@ -8,7 +12,7 @@ interface LegacyProblem {
   description: string;
   difficulty: string;
   points: number;
-  test_cases: any;
+  test_cases: JsonObject;
   hidden_judge_notes?: string;
 }
 
@@ -166,7 +170,7 @@ export async function migrateLegacySubmissions() {
   }
 }
 
-function mapLegacyStatus(legacyStatus: any): any {
+function mapLegacyStatus(legacyStatus: string): SubmissionStatus {
   // Map legacy Verdict enum to new SubmissionStatus
   switch (legacyStatus) {
     case 'PENDING':

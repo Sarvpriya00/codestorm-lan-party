@@ -1,11 +1,20 @@
 import { Request, Response } from 'express';
-import { Role } from '@prisma/client';
+import { Role, AttendanceStatus } from '@prisma/client';
 import { attendanceService } from '../services/attendanceService';
 import { auditService } from '../services/auditService';
+import { serializeJsonSafe } from '../utils/serialization';
 
 interface AuthRequest extends Request {
   userId?: string;
   userRole?: Role;
+}
+
+interface AttendanceRecordFilters {
+  contestId?: string;
+  userId?: string;
+  status?: AttendanceStatus;
+  checkinAfter?: Date;
+  checkinBefore?: Date;
 }
 
 export const checkIn = async (req: AuthRequest, res: Response) => {
@@ -37,15 +46,15 @@ export const checkIn = async (req: AuthRequest, res: Response) => {
         details: {
           contestId,
           targetUserId,
-          checkinTime: attendance.checkinTime
+          checkinTime: attendance.checkinTime.toISOString()
         }
       });
     }
 
-    res.status(200).json({
+    res.status(200).json(serializeJsonSafe({
       message: 'Check-in successful',
       attendance
-    });
+    }));
   } catch (error) {
     console.error('Error during check-in:', error);
     res.status(500).json({ message: error instanceof Error ? error.message : 'Internal server error' });
@@ -81,15 +90,15 @@ export const checkOut = async (req: AuthRequest, res: Response) => {
         details: {
           contestId,
           targetUserId,
-          checkoutTime: attendance.checkoutTime
+          checkoutTime: attendance.checkoutTime ? attendance.checkoutTime.toISOString() : null
         }
       });
     }
 
-    res.status(200).json({
+    res.status(200).json(serializeJsonSafe({
       message: 'Check-out successful',
       attendance
-    });
+    }));
   } catch (error) {
     console.error('Error during check-out:', error);
     res.status(500).json({ message: error instanceof Error ? error.message : 'Internal server error' });
@@ -126,10 +135,10 @@ export const updateAttendanceStatus = async (req: AuthRequest, res: Response) =>
       });
     }
 
-    res.status(200).json({
+    res.status(200).json(serializeJsonSafe({
       message: 'Attendance status updated successfully',
       attendance
-    });
+    }));
   } catch (error) {
     console.error('Error updating attendance status:', error);
     res.status(500).json({ message: error instanceof Error ? error.message : 'Internal server error' });
@@ -148,11 +157,11 @@ export const getAttendanceRecords = async (req: AuthRequest, res: Response) => {
   } = req.query;
 
   try {
-    const filters: any = {};
+    const filters: AttendanceRecordFilters = {};
     
     if (contestId) filters.contestId = contestId as string;
     if (userId) filters.userId = userId as string;
-    if (status) filters.status = status as any;
+    if (status) filters.status = status as AttendanceStatus;
     if (checkinAfter) filters.checkinAfter = new Date(checkinAfter as string);
     if (checkinBefore) filters.checkinBefore = new Date(checkinBefore as string);
 
@@ -163,13 +172,13 @@ export const getAttendanceRecords = async (req: AuthRequest, res: Response) => {
     const endIndex = startIndex + Number(pageSize);
     const paginatedRecords = records.slice(startIndex, endIndex);
 
-    res.status(200).json({
+    res.status(200).json(serializeJsonSafe({
       records: paginatedRecords,
       total: records.length,
       page: Number(page),
       pageSize: Number(pageSize),
       totalPages: Math.ceil(records.length / Number(pageSize))
-    });
+    }));
   } catch (error) {
     console.error('Error fetching attendance records:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -186,7 +195,7 @@ export const getContestAttendance = async (req: AuthRequest, res: Response) => {
   try {
     const attendance = await attendanceService.getContestAttendance(contestId);
 
-    res.status(200).json({ attendance });
+    res.status(200).json(serializeJsonSafe({ attendance }));
   } catch (error) {
     console.error('Error fetching contest attendance:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -203,7 +212,7 @@ export const getUserAttendance = async (req: AuthRequest, res: Response) => {
   try {
     const attendance = await attendanceService.getUserAttendance(userId);
 
-    res.status(200).json({ attendance });
+    res.status(200).json(serializeJsonSafe({ attendance }));
   } catch (error) {
     console.error('Error fetching user attendance:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -220,7 +229,7 @@ export const generateAttendanceReport = async (req: AuthRequest, res: Response) 
   try {
     const report = await attendanceService.generateAttendanceReport(contestId);
 
-    res.status(200).json({ report });
+    res.status(200).json(serializeJsonSafe({ report }));
   } catch (error) {
     console.error('Error generating attendance report:', error);
     res.status(500).json({ message: error instanceof Error ? error.message : 'Internal server error' });
@@ -231,7 +240,7 @@ export const getAttendanceStatistics = async (req: AuthRequest, res: Response) =
   try {
     const statistics = await attendanceService.getAttendanceStatistics();
 
-    res.status(200).json({ statistics });
+    res.status(200).json(serializeJsonSafe({ statistics }));
   } catch (error) {
     console.error('Error fetching attendance statistics:', error);
     res.status(500).json({ message: 'Internal server error' });

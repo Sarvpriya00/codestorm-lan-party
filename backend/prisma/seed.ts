@@ -1,283 +1,144 @@
-import { PrismaClient, ContestStatus, Difficulty } from '@prisma/client';
-import * as bcrypt from 'bcryptjs';
-
+import { PrismaClient, Difficulty, ContestStatus, ParticipantStatus } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Start seeding...');
+  console.log('Starting seed process...');
 
-  // 1. Define Permissions
-  const permissionsData = [
-    { code: 100, name: 'Dashboard', description: 'Access to dashboard', parentCode: null },
-    { code: 200, name: 'Problems', description: 'Access to problems', parentCode: null },
-    { code: 210, name: 'View Question', description: 'View question details', parentCode: 200 },
-    { code: 220, name: 'Add Submission', description: 'Submit solutions', parentCode: 200 },
-    { code: 230, name: 'Total Score', description: 'View total score', parentCode: 200 },
-    { code: 300, name: 'Judge Queue', description: 'Access to judge queue', parentCode: null },
-    { code: 310, name: 'View Submission', description: 'View submissions for judging', parentCode: 300 },
-    { code: 320, name: 'View Queue List', description: 'View judge queue list', parentCode: 300 },
-    { code: 500, name: 'Users', description: 'User management', parentCode: null },
-    { code: 600, name: 'Analytics', description: 'Access to analytics', parentCode: null },
-    { code: 700, name: 'Exports', description: 'Data export capabilities', parentCode: null },
-    { code: 800, name: 'Contest Control', description: 'Contest management', parentCode: null },
-    { code: 810, name: 'Timer Control', description: 'Contest timer control', parentCode: 800 },
-    { code: 820, name: 'Phase Control', description: 'Contest phase control', parentCode: 800 },
-    { code: 830, name: 'Display Control', description: 'Contest display control', parentCode: 800 },
-    { code: 840, name: 'Emergency Actions', description: 'Emergency contest actions', parentCode: 800 },
-    { code: 850, name: 'Problem Control', description: 'Contest problem management', parentCode: 800 },
-    { code: 860, name: 'User Control', description: 'Contest user management', parentCode: 800 },
-    { code: 900, name: 'Audit Log', description: 'Access to audit logs', parentCode: null },
-    { code: 1000, name: 'Backup', description: 'System backup management', parentCode: null },
-    { code: 1100, name: 'Attendance', description: 'Attendance tracking', parentCode: null },
+  // Clean up database in specific order to avoid constraint violations
+  console.log('Deleting existing data...');
+  await prisma.review.deleteMany();
+  await prisma.submission.deleteMany();
+  await prisma.contestProblem.deleteMany();
+  await prisma.contestUser.deleteMany();
+  await prisma.analytics.deleteMany();
+  await prisma.leaderboard.deleteMany();
+  await prisma.attendance.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.systemControl.deleteMany();
+  await prisma.questionProblem.deleteMany();
+  await prisma.contest.deleteMany();
+  await prisma.rolePermission.deleteMany();
+  await prisma.permission.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.role.deleteMany();
+  try {
+    await prisma.backupRecord.deleteMany();
+  } catch (e) {
+    // Ignore if backupRecord table does not exist
+  }
+  console.log('Finished deleting data.');
+
+  // Create Permissions
+  console.log('Creating permissions...');
+  const permsToCreate = [
+    { code: 100, name: 'Dashboard', description: 'Access to the main dashboard' },
+    { code: 200, name: 'Problems', description: 'Access to problems list' },
+    { code: 300, name: 'Judge Queue', description: 'Access to submission judging queue' },
+    { code: 500, name: 'Users', description: 'Manage users' },
+    { code: 600, name: 'Analytics', description: 'View system analytics' },
+    { code: 700, name: 'Exports', description: 'Export data' },
+    { code: 800, name: 'Contest Control', description: 'Control contest settings' },
+    { code: 900, name: 'Audit Log', description: 'View audit logs' },
+    { code: 1000, name: 'Backup', description: 'Manage system backups' },
+    { code: 1100, name: 'Attendance', description: 'Manage attendance' },
+  ];
+  await prisma.permission.createMany({ data: permsToCreate });
+
+  const parentPerms = await prisma.permission.findMany();
+  const parentPermMap = new Map(parentPerms.map(p => [p.code, p.id]));
+
+  const childPermsToCreate = [
+    { code: 210, name: 'View Question', parentCode: 200, description: 'View a single question' },
+    { code: 220, name: 'Add Submission', parentCode: 200, description: 'Submit a solution' },
+    { code: 230, name: 'Total Score', parentCode: 200, description: 'View total score' },
+    { code: 310, name: 'View Submission', parentCode: 300, description: 'View a submission for judging' },
+    { code: 320, name: 'View Queue List', parentCode: 300, description: 'View list of submissions in queue' },
   ];
 
-  const createdPermissions = new Map<number, string>(); // Map code to ID
-
-  // Create permissions without parent relationships first
-  const rootPermissions = permissionsData.filter(p => p.parentCode === null);
-  // Use a loop for create to handle potential duplicates if not a fresh reset
-  for (const perm of rootPermissions) {
-    const newPerm = await prisma.permission.upsert({
-      where: { code: perm.code },
-      update: { name: perm.name, description: perm.description },
-      create: { code: perm.code, name: perm.name, description: perm.description },
-    });
-    createdPermissions.set(newPerm.code, newPerm.id);
-    console.log(`Created/Updated root permission: ${newPerm.name} (${newPerm.code})`);
-  }
-
-  // Create permissions with parent relationships
-  const childPermissions = permissionsData.filter(p => p.parentCode !== null);
-  for (const perm of childPermissions) {
-    const parentId = createdPermissions.get(perm.parentCode!);
-    if (!parentId) {
-      console.error(`Parent permission with code ${perm.parentCode} not found for ${perm.name}`);
-      continue;
-    }
-    const newPerm = await prisma.permission.upsert({
-      where: { code: perm.code },
-      update: {
-        name: perm.name,
-        description: perm.description,
-        parentPermission: { connect: { id: parentId } },
-      },
-      create: {
-        code: perm.code,
-        name: perm.name,
-        description: perm.description,
-        parentPermission: { connect: { id: parentId } },
-      },
-    });
-    createdPermissions.set(newPerm.code, newPerm.id);
-    console.log(`Created/Updated permission: ${newPerm.name} (${newPerm.code}) with parent ${perm.parentCode}`);
-  }
-
-  // 2. Create Roles
-  const rolesToCreate = [
-    { name: 'ADMIN', description: 'Administrator with full system access' },
-    { name: 'JUDGE', description: 'Judge for reviewing submissions' },
-    { name: 'PARTICIPANT', description: 'Contest participant' },
-  ];
-  // Use upsert for roles to handle re-running seed
-  for (const roleData of rolesToCreate) {
-    await prisma.role.upsert({
-      where: { name: roleData.name },
-      update: { description: roleData.description },
-      create: roleData,
-    });
-  }
-  const adminRole = await prisma.role.findUniqueOrThrow({ where: { name: 'ADMIN' } });
-  const judgeRole = await prisma.role.findUniqueOrThrow({ where: { name: 'JUDGE' } });
-  const participantRole = await prisma.role.findUniqueOrThrow({ where: { name: 'PARTICIPANT' } });
-  console.log('Created/Updated roles: ADMIN, JUDGE, PARTICIPANT');
-
-  // 3. Assign Permissions to Roles
-  const assignPermissionsToRole = async (roleId: string, permissionCodes: number[]) => {
-    const rolePermissionsData = permissionCodes.map(code => {
-      const permissionId = createdPermissions.get(code);
-      if (!permissionId) {
-        console.warn(`Permission with code ${code} not found for role assignment.`);
-        return null;
+  for (const p of childPermsToCreate) {
+    await prisma.permission.create({
+      data: {
+        code: p.code,
+        name: p.name,
+        description: p.description,
+        parentPermissionId: parentPermMap.get(p.parentCode!)
       }
-      return { roleId, permissionId, inherited: false };
-    }).filter(Boolean) as { roleId: string; permissionId: string; inherited: boolean }[];
-
-    // Use a loop for upsert to handle re-running seed
-    for (const rpData of rolePermissionsData) {
-      await prisma.rolePermission.upsert({
-        where: { roleId_permissionId: { roleId: rpData.roleId, permissionId: rpData.permissionId } },
-        update: { inherited: rpData.inherited },
-        create: rpData,
-      });
-    }
-  };
-
-  // ADMIN permissions (all permissions)
-  await assignPermissionsToRole(adminRole.id, permissionsData.map(p => p.code));
-  console.log('Assigned all permissions to ADMIN role.');
-
-  // JUDGE permissions (Judge Queue, View Submission, View Queue List)
-  await assignPermissionsToRole(judgeRole.id, [300, 310, 320]);
-  console.log('Assigned JUDGE permissions.');
-
-  // PARTICIPANT permissions (Problems, View Question, Add Submission, Total Score)
-  await assignPermissionsToRole(participantRole.id, [200, 210, 220, 230]);
-  console.log('Assigned PARTICIPANT permissions.');
-
-  // 4. Create Sample Users
-  const hashedPasswordAdmin = await bcrypt.hash('adminpass', 10);
-  const hashedPasswordJudge = await bcrypt.hash('judgepass', 10);
-  const hashedPasswordParticipant = await bcrypt.hash('partpass', 10);
-
-  const usersToCreate = [
-    { username: 'adminuser', password: hashedPasswordAdmin, roleId: adminRole.id, displayName: 'Admin User' },
-    { username: 'judgeuser1', password: hashedPasswordJudge, roleId: judgeRole.id, displayName: 'Judge User One' },
-    { username: 'judgeuser2', password: hashedPasswordJudge, roleId: judgeRole.id, displayName: 'Judge User Two' },
-    { username: 'participant1', password: hashedPasswordParticipant, roleId: participantRole.id, displayName: 'Participant One' },
-    { username: 'participant2', password: hashedPasswordParticipant, roleId: participantRole.id, displayName: 'Participant Two' },
-    { username: 'participant3', password: hashedPasswordParticipant, roleId: participantRole.id, displayName: 'Participant Three' },
-    { username: 'participant4', password: hashedPasswordParticipant, roleId: participantRole.id, displayName: 'Participant Four' },
-    { username: 'participant5', password: hashedPasswordParticipant, roleId: participantRole.id, displayName: 'Participant Five' },
-  ];
-
-  // Use upsert for users to handle re-running seed
-  for (const userData of usersToCreate) {
-    await prisma.user.upsert({
-      where: { username: userData.username },
-      update: { password: userData.password, roleId: userData.roleId, displayName: userData.displayName },
-      create: userData,
     });
   }
+  console.log('Finished creating permissions.');
 
-  const adminUser = await prisma.user.findUniqueOrThrow({ where: { username: 'adminuser' } });
-  const participantUsers = await prisma.user.findMany({
-    where: { roleId: participantRole.id },
+  const allPerms = await prisma.permission.findMany();
+  const permIdMap = new Map(allPerms.map(p => [p.code, p.id]));
+
+  // Create Roles
+  console.log('Creating roles...');
+  const adminRole = await prisma.role.create({ data: { name: 'ADMIN', description: 'Administrator' } });
+  const judgeRole = await prisma.role.create({ data: { name: 'JUDGE', description: 'Judge' } });
+  const participantRole = await prisma.role.create({ data: { name: 'PARTICIPANT', description: 'Participant' } });
+  console.log('Finished creating roles.');
+
+  // Assign Permissions to Roles
+  console.log('Assigning permissions to roles...');
+  const adminCodes = [100, 500, 600, 700, 800, 900, 1000, 1100, 200, 210, 220, 230, 300, 310, 320];
+  const judgeCodes = [300, 310, 320, 200, 210];
+  const participantCodes = [200, 210, 220, 230];
+
+  await prisma.rolePermission.createMany({ data: adminCodes.map(code => ({ roleId: adminRole.id, permissionId: permIdMap.get(code)! })) });
+  await prisma.rolePermission.createMany({ data: judgeCodes.map(code => ({ roleId: judgeRole.id, permissionId: permIdMap.get(code)! })) });
+  await prisma.rolePermission.createMany({ data: participantCodes.map(code => ({ roleId: participantRole.id, permissionId: permIdMap.get(code)! })) });
+  console.log('Finished assigning permissions.');
+
+  // Create Users
+  console.log('Creating users...');
+  const hash = (s: string) => bcrypt.hashSync(s, 10);
+  const [adminPwd, judgePwd, userPwd] = [hash('Admin@123'), hash('Judge@123'), hash('User@123')];
+
+  await prisma.user.createMany({
+    data: [
+      { username: 'admin', displayName: 'Admin', password: adminPwd, roleId: adminRole.id },
+      { username: 'judge1', displayName: 'Judge One', password: judgePwd, roleId: judgeRole.id },
+      { username: 'judge2', displayName: 'Judge Two', password: judgePwd, roleId: judgeRole.id },
+      { username: 'p1', displayName: 'Participant 1', password: userPwd, roleId: participantRole.id },
+      { username: 'p2', displayName: 'Participant 2', password: userPwd, roleId: participantRole.id },
+      { username: 'p3', displayName: 'Participant 3', password: userPwd, roleId: participantRole.id },
+      { username: 'p4', displayName: 'Participant 4', password: userPwd, roleId: participantRole.id },
+      { username: 'p5', displayName: 'Participant 5', password: userPwd, roleId: participantRole.id },
+    ],
   });
-  console.log('Created/Updated sample users.');
+  const admin = await prisma.user.findUniqueOrThrow({ where: { username: 'admin' } });
+  console.log('Finished creating users.');
 
-  // 5. Create 60 Sample Problems
-  const problemsToCreate = [];
-  const problemTitles = [
-    "Reverse a String", "Find Max Element", "Check Palindrome", "Factorial Calculation", "Sum of Array",
-    "FizzBuzz", "Count Vowels", "Remove Duplicates", "Merge Sorted Arrays", "Find Missing Number",
-    "Prime Number Check", "Fibonacci Sequence", "Anagram Check", "Longest Word", "Capitalize First Letter",
-    "Array Intersection", "Flatten Array", "Chunk Array", "Debounce Function", "Throttle Function",
-    "Deep Clone Object", "Binary Search Tree Insert", "Linked List Reversal", "Graph BFS", "Graph DFS",
-    "Quick Sort", "Merge Sort", "Heap Sort", "Dijkstra's Algorithm", "Bellman-Ford Algorithm",
-    "Knapsack Problem", "Longest Common Subsequence", "Edit Distance", "Matrix Multiplication", "Sudoku Solver",
-    "N-Queens Problem", "Traveling Salesman", "Minimum Spanning Tree", "Max Flow Min Cut", "Convex Hull",
-    "Closest Pair of Points", "Fast Fourier Transform", "Suffix Array", "Trie Implementation", "Bloom Filter",
-    "LRU Cache", "Consistent Hashing", "Distributed Lock", "Leader Election", "Consensus Algorithm",
-    "Rate Limiter", "Circuit Breaker", "Idempotent API", "Event Sourcing", "CQRS Pattern",
-    "Sharding Database", "Replication Strategies", "Load Balancing", "API Gateway", "Service Mesh"
-  ];
+  // Create Problems
+  console.log('Creating problems...');
+  const problemsToCreate: { questionText: string; difficultyLevel: Difficulty; tags: string; createdById: string; maxScore: number; isActive: boolean; }[] = [];
+  for (let i = 1; i <= 20; i++) problemsToCreate.push({ questionText: `[EASY] Problem #${i}`, difficultyLevel: 'EASY', tags: JSON.stringify(['easy', 'algorithms']), createdById: admin.id, maxScore: 100, isActive: true });
+  for (let i = 1; i <= 20; i++) problemsToCreate.push({ questionText: `[MEDIUM] Problem #${i}`, difficultyLevel: 'MEDIUM', tags: JSON.stringify(['medium', 'data-structures']), createdById: admin.id, maxScore: 200, isActive: true });
+  for (let i = 1; i <= 20; i++) problemsToCreate.push({ questionText: `[HARD] Problem #${i}`, difficultyLevel: 'HARD', tags: JSON.stringify(['hard', 'dynamic-programming']), createdById: admin.id, maxScore: 300, isActive: true });
+  await prisma.questionProblem.createMany({ data: problemsToCreate });
+  console.log('Finished creating problems.');
 
-  for (let i = 0; i < 20; i++) {
-    problemsToCreate.push({
-      questionText: `EASY: ${problemTitles[i % problemTitles.length]} - Problem ${i + 1}`,
-      difficultyLevel: Difficulty.EASY,
-      tags: JSON.stringify(['easy', 'basic', `tag${i}`]),
-      maxScore: 100,
-      isActive: true,
-      createdById: adminUser.id,
-    });
-    problemsToCreate.push({
-      questionText: `MEDIUM: ${problemTitles[i % problemTitles.length]} - Problem ${i + 1}`,
-      difficultyLevel: Difficulty.MEDIUM,
-      tags: JSON.stringify(['medium', 'intermediate', `tag${i}`]),
-      maxScore: 200,
-      isActive: true,
-      createdById: adminUser.id,
-    });
-    problemsToCreate.push({
-      questionText: `HARD: ${problemTitles[i % problemTitles.length]} - Problem ${i + 1}`,
-      difficultyLevel: Difficulty.HARD,
-      tags: JSON.stringify(['hard', 'advanced', `tag${i}`]),
-      maxScore: 300,
-      isActive: true,
-      createdById: adminUser.id,
-    });
-  }
-
-  // Use createMany for problems as they are new after reset
-  await prisma.questionProblem.createMany({
-    data: problemsToCreate,
+  // Create Contest and associate problems/users
+  console.log('Creating contest...');
+  const contest = await prisma.contest.create({
+    data: { name: 'CodeStorm Test Contest', description: 'Seeded test contest', startTime: new Date(), endTime: new Date(Date.now() + 3 * 3600_000), status: 'RUNNING' },
   });
-  const allProblems = await prisma.questionProblem.findMany();
-  console.log(`Created ${allProblems.length} sample problems.`);
-
-  // 6. Create a "CodeStorm Test Contest"
-  let testContest = await prisma.contest.findUnique({
-    where: { name: 'CodeStorm Test Contest' },
+  const allProblems = await prisma.questionProblem.findMany({ orderBy: [{ difficultyLevel: 'asc' }, { id: 'asc' }] });
+  await prisma.contestProblem.createMany({
+    data: allProblems.map((p, idx) => ({ contestId: contest.id, problemId: p.id, order: idx + 1, points: p.maxScore }))
   });
+  const participants = await prisma.user.findMany({ where: { roleId: participantRole.id } });
+  await prisma.contestUser.createMany({
+    data: participants.map(u => ({ contestId: contest.id, userId: u.id, joinedAt: new Date(), status: 'ACTIVE' }))
+  });
+  console.log('Finished creating contest.');
 
-  if (testContest) {
-    // If contest exists, update it
-    testContest = await prisma.contest.update({
-      where: { id: testContest.id }, // Must use ID for update
-      data: {
-        description: 'A contest for testing all seeded problems and users.',
-        startTime: new Date(),
-        endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        status: ContestStatus.RUNNING, // Set to RUNNING as per requirement
-      },
-    });
-    console.log(`Updated contest: ${testContest.name} (Status: ${testContest.status})`);
-  } else {
-    // If contest does not exist, create it
-    testContest = await prisma.contest.create({
-      data: {
-        name: 'CodeStorm Test Contest',
-        description: 'A contest for testing all seeded problems and users.',
-        startTime: new Date(),
-        endTime: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        status: ContestStatus.RUNNING, // Set to RUNNING as per requirement
-      },
-    });
-    console.log(`Created contest: ${testContest.name} (Status: ${testContest.status})`);
-  }
-
-  // Attach all problems to the contest
-  const contestProblemsToCreate = allProblems.map((problem, index) => ({
-    contestId: testContest.id,
-    problemId: problem.id,
-    order: index + 1,
-    points: problem.maxScore, // Points match maxScore
-  }));
-
-  // Use a loop for upsert to handle re-running seed
-  for (const cpData of contestProblemsToCreate) {
-    await prisma.contestProblem.upsert({
-      where: { contestId_problemId: { contestId: cpData.contestId, problemId: cpData.problemId } },
-      update: { order: cpData.order, points: cpData.points },
-      create: cpData,
-    });
-  }
-  console.log(`Attached ${contestProblemsToCreate.length} problems to the contest.`);
-
-  // 7. Join all 5 participants to the contest
-  const contestUsersToCreate = participantUsers.map(user => ({
-    contestId: testContest.id,
-    userId: user.id,
-    status: 'ACTIVE' as const,
-  }));
-
-  // Use a loop for upsert to handle re-running seed
-  for (const cuData of contestUsersToCreate) {
-    await prisma.contestUser.upsert({
-      where: { contestId_userId: { contestId: cuData.contestId, userId: cuData.userId } },
-      update: { status: cuData.status },
-      create: cuData,
-    });
-  }
-  console.log(`Enrolled ${contestUsersToCreate.length} participants in the contest.`);
-
-  console.log('Seeding finished successfully!');
+  console.log('Seed complete.');
 }
 
 main()
   .catch((e) => {
-    console.error('Seeding failed:', e);
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {
