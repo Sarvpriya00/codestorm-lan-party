@@ -11,14 +11,14 @@ interface AuthRequest extends Request {
 }
 
 const allRoutes = [
-  { path: '/', component: 'Dashboard', title: 'Dashboard', icon: 'Home', requiredPermissions: [100] },
-  { path: '/problems', component: 'Problems', title: 'Problems', icon: 'FileText', requiredPermissions: [200] },
-  { path: '/leaderboard', component: 'Leaderboard', title: 'Leaderboard', icon: 'Trophy', requiredPermissions: [100] },
-  { path: '/judge', component: 'JudgeQueue', title: 'Judge Queue', icon: 'Gavel', requiredPermissions: [300] },
-  { path: '/submissions', component: 'MySubmissions', title: 'My Submissions', icon: 'Send', requiredPermissions: [220] },
-  { path: '/admin/users', component: 'AdminUsers', title: 'Users', icon: 'Users', requiredPermissions: [500] },
-  { path: '/admin/analytics', component: 'AdminAnalytics', title: 'Analytics', icon: 'BarChart3', requiredPermissions: [600] },
-  { path: '/admin/control', component: 'AdminControl', title: 'Contest Control', icon: 'Settings', requiredPermissions: [800] },
+  { path: '/', component: 'Dashboard', title: 'Dashboard', icon: 'Home', requiredPermissions: [100], isDefault: true, priority: 5 },
+  { path: '/problems', component: 'Problems', title: 'Problems', icon: 'FileText', requiredPermissions: [200], isDefault: true, priority: 4 },
+  { path: '/leaderboard', component: 'Leaderboard', title: 'Leaderboard', icon: 'Trophy', requiredPermissions: [100], priority: 3 },
+  { path: '/judge', component: 'JudgeQueue', title: 'Judge Queue', icon: 'Gavel', requiredPermissions: [300], isDefault: true, priority: 2 },
+  { path: '/submissions', component: 'MySubmissions', title: 'My Submissions', icon: 'Send', requiredPermissions: [220], priority: 6 },
+  { path: '/admin/users', component: 'AdminUsers', title: 'Users', icon: 'Users', requiredPermissions: [500], isDefault: true, priority: 1 },
+  { path: '/admin/analytics', component: 'AdminAnalytics', title: 'Analytics', icon: 'BarChart3', requiredPermissions: [600], priority: 7 },
+  { path: '/admin/control', component: 'AdminControl', title: 'Contest Control', icon: 'Settings', requiredPermissions: [800], isDefault: true, priority: 1 },
 ];
 
 router.get('/user/routes-and-permissions', cors(), authenticateToken, async (req: AuthRequest, res: Response) => {

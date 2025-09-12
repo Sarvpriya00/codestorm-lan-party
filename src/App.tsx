@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NavigationProvider } from "@/contexts/NavigationContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { DynamicRouter } from "@/components/DynamicRouter";
@@ -23,17 +24,19 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <OfflineIndicator />
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/*" element={<DynamicRouter />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <BrowserRouter>
+          <NavigationProvider>
+            <TooltipProvider>
+              <OfflineIndicator />
+              <Toaster />
+              <Sonner />
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/*" element={<DynamicRouter />} />
+              </Routes>
+            </TooltipProvider>
+          </NavigationProvider>
+        </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>

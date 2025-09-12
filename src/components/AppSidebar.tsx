@@ -63,7 +63,8 @@ export function AppSidebar() {
     const fetchNavItems = async () => {
       try {
         const response = await api.get("/dynamic/user/routes-and-permissions");
-        setNavItems(response.data.dynamicRoutes);
+        const data = response as any;
+        setNavItems(data.dynamicRoutes || []);
       } catch (error) {
         console.error("Failed to fetch navigation items:", error);
       }

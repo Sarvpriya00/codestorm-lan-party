@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +13,6 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import websocketService from "@/lib/websocket";
 
 export function Login() {
@@ -22,14 +22,11 @@ export function Login() {
   const [connectionStatus, setConnectionStatus] = useState("Disconnected");
   
   const { login, isAuthenticated, isLoading } = useAuth();
-  const navigate = useNavigate();
 
-  // Redirect if already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/', { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
+  // Redirect if already authenticated - NavigationContext will handle proper redirection
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   // Monitor WebSocket connection status
   useEffect(() => {
@@ -63,6 +60,7 @@ export function Login() {
 
     try {
       await login(username, password);
+      // NavigationContext will handle redirection after login
     } catch (err) {
       console.error('Login error:', err);
       setError(err instanceof Error ? err.message : "Login failed. Please check your credentials.");
