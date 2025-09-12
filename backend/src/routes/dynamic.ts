@@ -11,8 +11,8 @@ interface AuthRequest extends Request {
 }
 
 const allRoutes = [
-  { path: '/', component: 'Dashboard', title: 'Dashboard', icon: 'Home', requiredPermissions: [100], isDefault: true, priority: 5 },
-  { path: '/problems', component: 'Problems', title: 'Problems', icon: 'FileText', requiredPermissions: [200], isDefault: true, priority: 4 },
+  { path: '/', component: 'Dashboard', title: 'Dashboard', icon: 'Home', requiredPermissions: [], isDefault: true, priority: 5 },
+  { path: '/problems', component: 'Problems', title: 'Problems', icon: 'FileText', requiredPermissions: [], isDefault: true, priority: 4 },
   { path: '/leaderboard', component: 'Leaderboard', title: 'Leaderboard', icon: 'Trophy', requiredPermissions: [100], priority: 3 },
   { path: '/judge', component: 'JudgeQueue', title: 'Judge Queue', icon: 'Gavel', requiredPermissions: [300], isDefault: true, priority: 2 },
   { path: '/submissions', component: 'MySubmissions', title: 'My Submissions', icon: 'Send', requiredPermissions: [220], priority: 6 },

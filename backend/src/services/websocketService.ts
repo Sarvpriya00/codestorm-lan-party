@@ -38,7 +38,18 @@ export const initWebSocket = (server: any) => {
 
     wss.on('connection', (ws: AuthenticatedWebSocket, req) => {
       const clientIP = req.socket.remoteAddress;
-      console.log(`Client connected to WebSocket from ${clientIP}`);
+      const origin = req.headers.origin; // Get the Origin header
+
+      // Allow specific origins for WebSocket connections
+      const allowedOrigins = ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:3000']; // Add other allowed origins as needed
+
+      if (origin && !allowedOrigins.includes(origin)) {
+        console.warn(`WebSocket connection from disallowed origin: ${origin}. Closing connection.`);
+        ws.close(1000, 'Origin not allowed'); // Close with code 1000 (Normal Closure) and reason
+        return;
+      }
+
+      console.log(`Client connected to WebSocket from ${clientIP} (Origin: ${origin || 'N/A'})`);
 
       // Send welcome message
       ws.send(JSON.stringify({

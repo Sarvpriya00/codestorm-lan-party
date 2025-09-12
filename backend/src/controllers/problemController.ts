@@ -116,7 +116,22 @@ export const getProblems = async (req: Request, res: Response) => {
       title: extractTitleFromQuestionText(problem.questionText),
       questionText: problem.questionText,
       difficulty: problem.difficultyLevel,
-      tags: problem.tags ? JSON.parse(problem.tags) : [],
+      tags: (() => {
+        let parsedTags = [];
+        if (problem.tags) {
+          try {
+            parsedTags = JSON.parse(problem.tags);
+            if (!Array.isArray(parsedTags)) {
+              parsedTags = []; // Ensure it's an array
+            }
+          } catch (e) {
+            console.error(`Error parsing tags for problem ${problem.id}:`, e);
+            // Fallback to empty array if parsing fails
+            parsedTags = [];
+          }
+        }
+        return parsedTags;
+      })(),
       maxScore: problem.maxScore,
       isActive: problem.isActive,
       createdAt: problem.createdAt,
@@ -211,7 +226,22 @@ export const getProblemById = async (req: Request, res: Response) => {
       title: extractTitleFromQuestionText(problem.questionText),
       questionText: problem.questionText,
       difficulty: problem.difficultyLevel,
-      tags: problem.tags ? JSON.parse(problem.tags) : [],
+      tags: (() => {
+        let parsedTags = [];
+        if (problem.tags) {
+          try {
+            parsedTags = JSON.parse(problem.tags);
+            if (!Array.isArray(parsedTags)) {
+              parsedTags = []; // Ensure it's an array
+            }
+          } catch (e) {
+            console.error(`Error parsing tags for problem ${problem.id}:`, e);
+            // Fallback to empty array if parsing fails
+            parsedTags = [];
+          }
+        }
+        return parsedTags;
+      })(),
       maxScore: problem.maxScore,
       isActive: problem.isActive,
       createdAt: problem.createdAt,
@@ -288,7 +318,22 @@ export const createProblem = async (req: AuthRequest, res: Response) => {
       title: extractTitleFromQuestionText(problem.questionText),
       questionText: problem.questionText,
       difficulty: problem.difficultyLevel,
-      tags: problem.tags ? JSON.parse(problem.tags) : [],
+      tags: (() => {
+        let parsedTags = [];
+        if (problem.tags) {
+          try {
+            parsedTags = JSON.parse(problem.tags);
+            if (!Array.isArray(parsedTags)) {
+              parsedTags = []; // Ensure it's an array
+            }
+          } catch (e) {
+            console.error(`Error parsing tags for problem ${problem.id}:`, e);
+            // Fallback to empty array if parsing fails
+            parsedTags = [];
+          }
+        }
+        return parsedTags;
+      })(),
       maxScore: problem.maxScore,
       isActive: problem.isActive,
       createdAt: problem.createdAt,
@@ -364,7 +409,22 @@ export const updateProblem = async (req: AuthRequest, res: Response) => {
       title: extractTitleFromQuestionText(updatedProblem.questionText),
       questionText: updatedProblem.questionText,
       difficulty: updatedProblem.difficultyLevel,
-      tags: updatedProblem.tags ? JSON.parse(updatedProblem.tags) : [],
+      tags: (() => {
+        let parsedTags = [];
+        if (updatedProblem.tags) {
+          try {
+            parsedTags = JSON.parse(updatedProblem.tags);
+            if (!Array.isArray(parsedTags)) {
+              parsedTags = []; // Ensure it's an array
+            }
+          } catch (e) {
+            console.error(`Error parsing tags for problem ${updatedProblem.id}:`, e);
+            // Fallback to empty array if parsing fails
+            parsedTags = [];
+          }
+        }
+        return parsedTags;
+      })(),
       maxScore: updatedProblem.maxScore,
       isActive: updatedProblem.isActive,
       createdAt: updatedProblem.createdAt,

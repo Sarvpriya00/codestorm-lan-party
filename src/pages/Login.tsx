@@ -23,11 +23,6 @@ export function Login() {
   
   const { login, isAuthenticated, isLoading } = useAuth();
 
-  // Redirect if already authenticated - NavigationContext will handle proper redirection
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-
   // Monitor WebSocket connection status
   useEffect(() => {
     const checkConnection = () => {
@@ -48,6 +43,11 @@ export function Login() {
     
     return () => clearInterval(interval);
   }, []);
+
+  // Redirect if already authenticated - NavigationContext will handle proper redirection
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
