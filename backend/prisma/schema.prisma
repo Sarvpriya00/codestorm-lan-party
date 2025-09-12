@@ -117,7 +117,7 @@ model RolePermission {
 // Contest system
 model Contest {
   id                    String            @id @default(uuid())
-  name                  String
+  name                  String            @unique
   description           String?
   startTime             DateTime?
   endTime               DateTime?
